@@ -1,5 +1,5 @@
 :root {
-    --theme: gold;
+    --theme: lightgray;
 }
 
 
@@ -26,8 +26,10 @@ body {
 .tab {
     height: 40px;
     width: 10%;
-    background-color: rgba(242, 241, 215, 0.5);
-    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0); /* $334 */
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    margin-top: 10px;
     display: flex;
     align-items: center;
     justify-content: space-around;
@@ -35,6 +37,7 @@ body {
     outline: none;
     overflow: hidden;
     text-align: left;
+    box-shadow: 1px -1px 1px lightgray;
 }
 
 
@@ -47,8 +50,8 @@ body {
     z-index: 5;
 }
 
-.active {
-    background-color: rgba(255, 255, 255, 0.5);
+.active, .tab:active {
+    background-color: rgba(255, 255, 255, 0.831);
 }
 
 #bar {
@@ -73,16 +76,17 @@ body {
 }
 
 #sidebar h1:hover {
-    background-color: rgba(252, 252, 192, 0.697);
+    background-color: rgba(206, 206, 206, 0.513);
 }
 
 .sidebarApp {
     position: fixed;
     height: 100%;
     margin-left: 50px;
-    background-color: rgba(251, 251, 234, 0.697);
-    width: 40%;
+    background-color: rgba(201, 201, 201, 0.66);
+    width: 45%;
     z-index: 10;
+    backdrop-filter: blur(2px);
 }
 
 .hidden {
@@ -102,4 +106,8 @@ body {
     width: 20px;
     border: 1px solid black;
     border-radius: 50px;
+}
+
+webview {
+    background-color: white;
 }
