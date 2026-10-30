@@ -1,9 +1,21 @@
 let homepage = "https://google.com";
 let searchURL = "https://google.com/search?q=";
 let tabbarEl = document.getElementById("tabbar");
-let version = "1.0.0.0";
+let version = "1.0.0.1";
+let updateAddress = true;
 
-// NEXT: Make it when the website tries to open a new tab it opens in a new AutoBrowser tab instead of a new window
+/* Whats new:
+
+ -- Added CSS inserter.
+ -- You can now toggle Reading Mode on and off with the same Button.
+ -- Bug Fixes and Improvements.
+ -- Resized Sidebar pages and tools.
+ -- Fixed a bug with when you visit some websites including Pixabay when it uses transparent coloring it will be the Browsers theme and not white.
+ -- Redesigned AutoBrowser.
+ -- Now AutoBrowser shows you the href of the link you are hovering in the addressbar.
+ -- Fixed a bug where JavaScript popups and window.open did not work.
+
+*/
 
 function startup(){
 let newContainerEl = document.createElement("div");
@@ -26,6 +38,7 @@ newContainerEl.innerHTML=`
 <h1>Settings</h1>
 <p>Theme Color:</p>
 <div style="display:flex; align-items:center; justify-content:space-around;">
+<div class="selectOption" style="background-color:lightgray;" onclick="document.documentElement.style.setProperty('--theme', 'lightgray');"></div>
 <div class="selectOption" style="background-color:gold;" onclick="document.documentElement.style.setProperty('--theme', 'gold');"></div>
 <div class="selectOption" style="background-color:red;" onclick="document.documentElement.style.setProperty('--theme', 'red');"></div>
 <div class="selectOption" style="background-color:blue;" onclick="document.documentElement.style.setProperty('--theme', 'blue');"></div>
@@ -75,9 +88,13 @@ newContainerEl.innerHTML=`
 <hr>
 <br>
 <button onclick="document.querySelector('.activeWebview').reloadIgnoringCache()">Reload igoring Cache</button><br><br>
+<p>Multi-line CSS inserter: (Runs on active webview)</p>
+<textarea onchange="document.querySelector('.activeWebview').executeJavaScript('let newStyle = document.createElement(\`style\`); newStyle.textContent=\`'+this.value+'\`; document.body.appendChild(newStyle);')" placeholder="Enter CSS code..." style="height:200px; width:300px; background-color:black; color:white;"></textarea>
+<hr>
+<br>
 </div>
 
-<div id="tabbar"><div class="tab" style="font-size:1.4rem;" onclick="newTab(homepage)"><p>+</p></div><input class="tab" id="bar" placeholder="Search the Web or Enter URL"></div>
+<div id="tabbar"><div class="tab" style="font-size:1.4rem; width:55px;" onclick="newTab(homepage)"><p>+</p></div><div style="width:20%;"></div><input class="tab" id="bar" placeholder="Search the Web or Enter URL"></div>
 `;
 newContainerEl.id = "root_container";
 newContainerEl.style.height="100vh";
@@ -113,15 +130,26 @@ function newTab(url){
     tabbarEl.prepend(newTabEl);
     let newWebview = document.createElement("webview");
     newWebview.src = url;
+    newWebview.setAttribute("allowpopups", "true");
     newWebview.classList.add("webview");
     newWebview.classList.add("activeWebview");
-    newWebview.setAttribute("useragent", `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 AutoBrowser/${version} Safari/537.36`);
+    newWebview.setAttribute("useragent", `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 AutoBrowser/${version} Safari/537.36`);
     newContainerEl.appendChild(newWebview);
     newTabEl.addEventListener("click", () => {
     deselectTabs();
     newWebview.classList.add("activeWebview");
     newWebview.style.display='flex';
     newTabEl.classList.add("active");
+    });
+    newWebview.addEventListener("update-target-url", (event) => {
+        if (event.url){
+            updateAddress = false;
+            addressBarEl.value = event.url;
+            addressBarEl.style.border="1px solid black";
+        } else {
+            updateAddress = true;
+            addressBarEl.style.border="none";
+        }
     });
     newTabEl.addEventListener("contextmenu", () => {
         deselectTabs();
@@ -137,7 +165,7 @@ function newTab(url){
 function update(){
     document.querySelector(".active").innerText = document.querySelector(".activeWebview").getTitle();
     document.title = `${document.querySelector(".activeWebview").getTitle()} - AutoBrowser`;
-    if (document.activeElement !== addressBarEl){
+    if (document.activeElement !== addressBarEl && updateAddress){
     addressBarEl.value = document.querySelector(".activeWebview").getURL();
     }
     document.querySelector(".active").innerHTML = document.querySelector(".active").innerText.split(" ").join("&nbsp;");
@@ -207,11 +235,17 @@ function newSidebarPage(url){
 
 
 function readingMode(){
+    document.querySelector(".activeWebview").executeJavaScript(`document.reading`).then(result => {
+        if (result){
+        document.querySelector(".activeWebview").reload();
+        } else {
     document.querySelector(".activeWebview").executeJavaScript(`
+        document.reading = true;
         let READING_MODE_CONTENT = document.body.innerText;
         let newReadingMode = document.createElement("iframe");
-        newReadingMode.srcdoc = "<br><pre>"+READING_MODE_CONTENT+"</pre>";
+        newReadingMode.srcdoc = "<br><pre style='font-family:sans-serif;'>"+READING_MODE_CONTENT+"</pre>";
         newReadingMode.style.position="fixed";
+        newReadingMode.setAttribute("frameborder", "0");
         newReadingMode.style.left="0";
         newReadingMode.style.top="0";
         newReadingMode.style.height="100vh";
@@ -221,10 +255,15 @@ function readingMode(){
         document.body.prepend(newReadingMode);
         newReadingMode.focus();
         `);
+    }
+    }).catch(err => console.error(err));
 }
 
 
-window.electronAPI.onOpenNewTab((url) => {
+let newScript = document.createElement("script");
+newScript.textContent = `window.electronAPI.onOpenNewTab((url) => {
   console.log(url);
   newTab(url);
 });
+`;
+document.body.appendChild(newScript);
