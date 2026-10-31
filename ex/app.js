@@ -1,19 +1,25 @@
 let homepage = "https://google.com";
 let searchURL = "https://google.com/search?q=";
 let tabbarEl = document.getElementById("tabbar");
-let version = "1.0.0.1";
+let version = "1.0.0.2";
 let updateAddress = true;
+let lastClosedTab = "unset";
+let history = "";
+let incognito = false;
+
 
 /* Whats new:
 
- -- Added CSS inserter.
- -- You can now toggle Reading Mode on and off with the same Button.
- -- Bug Fixes and Improvements.
- -- Resized Sidebar pages and tools.
- -- Fixed a bug with when you visit some websites including Pixabay when it uses transparent coloring it will be the Browsers theme and not white.
- -- Redesigned AutoBrowser.
- -- Now AutoBrowser shows you the href of the link you are hovering in the addressbar.
- -- Fixed a bug where JavaScript popups and window.open did not work.
+ -- Now Website Sidebar pages have the Page's favicon instead of the letter if the page has a favicon.
+ -- Added User Agent settings to Developer Tools.
+ -- Redesigned Buttons, Inputs and Dropdowns in Sidebar Pages.
+ -- Now you can scroll in Sidebar pages.
+ -- Added the restore last closed tab button in Settings.
+ -- Added Home Button
+ -- Added Custom Color text to Settings.
+ -- Updated the Wikipedia Sidebar Page to be removable on right-click.
+ -- Add Browsing History and Incognito.
+ -- Improvements in Developer Tools
 
 */
 
@@ -24,13 +30,14 @@ newContainerEl.innerHTML=`
 
 <div id="sidebar">
 <h1 onclick="document.querySelector('.activeWebview').reload()"><i class="fa-solid fa-rotate-right"></i></h1>
+<h1 onclick="document.querySelector('.activeWebview').loadURL(homepage)" class="hidden" id="homeBtn"><i class="fa-regular fa-house"></i></h1>
 <h1 onclick="document.querySelector('.activeWebview').goBack()" id="goBack"><i class="fa-solid fa-angle-left"></i></h1>
 <h1 onclick="document.querySelector('.activeWebview').goForward()" id="goForward"><i class="fa-solid fa-angle-right"></i></h1>
 <h1 onclick="toggleSettings();"><i class="fa-solid fa-gear"></i></h1>
-<h1 onclick="toggleWikipedia();"><i class="fa-brands fa-wikipedia-w"></i></h1>
-<h1 onclick="document.querySelector('.activeWebview').print()"><i class="fa-solid fa-print"></i></h1>
-<h1 onclick="readingMode()"><i class="fa-solid fa-book-open"></i></h1>
+<h1 onclick="document.querySelector('.activeWebview').print()" id="printOpenBtn"><i class="fa-solid fa-print"></i></h1>
+<h1 onclick="readingMode()" id="readOpenBtn"><i class="fa-solid fa-book-open"></i></h1>
 <h1 onclick="toggleDevTools()"><i class="fa-solid fa-code"></i></h1>
+<h1 onclick="toggleHistory()" id="historyOpenBtn"><i class="fa-solid fa-clock-rotate-left"></i></h1>
 </div>
 
 
@@ -50,7 +57,7 @@ newContainerEl.innerHTML=`
 <div class="selectOption" style="background-color:teal;" onclick="document.documentElement.style.setProperty('--theme', 'teal');"></div>
 </div>
 <br>
-<input onchange="document.documentElement.style.setProperty('--theme', this.value);" type="color">
+<span>Custom Color: </span><input onchange="document.documentElement.style.setProperty('--theme', this.value);" type="color">
 <p>Homepage: (Include https://)</p>
 <input onchange="homepage = this.value" type="text" value="${homepage}">
 <p>Search Engine:</p>
@@ -68,17 +75,24 @@ newContainerEl.innerHTML=`
 <p>Sidebar Pages: (Include https://)</p>
 <input onchange="newSidebarPage(this.value)" placeholder="Enter URL"><br><br>
 <button onclick="newSidebarPage(document.querySelector('.activeWebview').getURL())">Add current Website</button>
+<p>Tab and Sidebar:</p>
+<button onclick="if (lastClosedTab !== 'unset'){ newTab(lastClosedTab); }">Restore last closed tab</button>
+<button onclick="document.getElementById('homeBtn').classList.toggle('hidden')">Toggle Home Button</button>
+<button onclick="document.getElementById('historyOpenBtn').classList.toggle('hidden')">Toggle History Button</button>
+<button onclick="document.getElementById('readOpenBtn').classList.toggle('hidden')">Toggle Reading Mode Button</button>
+<button onclick="document.getElementById('printOpenBtn').classList.toggle('hidden')">Toggle Print Button</button>
+
+
 <p>About:</p>
 <div style="display:flex; align-items:center: text-align:center; justify-content:space-around;">
 <img src="images/icon.png" alt="A" height="50">
 <p>AutoBrowser ${version}</p>
 </div>
+<button onclick="newTab('http://ioposts.farleyengineeredsolutions.com/auto/releases.html')">Releases</button>
+<button onclick="newTab('http://ioposts.farleyengineeredsolutions.com/auto/')">Website</button>
 
 </div>
 
-<div class="sidebarApp hidden" id="wikipedia">
-<webview src="https://wikipedia.org" style="height:100%; width:100%; display:flex;"></webview>
-</div>
 
 <div class="sidebarApp hidden" id="devTools">
 <h1>Developer Tools</h1>
@@ -92,13 +106,29 @@ newContainerEl.innerHTML=`
 <textarea onchange="document.querySelector('.activeWebview').executeJavaScript('let newStyle = document.createElement(\`style\`); newStyle.textContent=\`'+this.value+'\`; document.body.appendChild(newStyle);')" placeholder="Enter CSS code..." style="height:200px; width:300px; background-color:black; color:white;"></textarea>
 <hr>
 <br>
+<button onclick="document.querySelector('.activeWebview').setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 AutoBrowser/${version} Safari/537.36'); document.querySelector('.activeWebview').reload()">Set User Agent to Default</button><br><br>
+<button onclick="document.querySelector('.activeWebview').setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0'); document.querySelector('.activeWebview').reload()">Set User Agent to Firefox</button><br><br>
+<button onclick="document.querySelector('.activeWebview').setUserAgent('Mozilla/5.0 (Windows NT 10.0; Trident/7.0; rv:11.0) like Gecko'); document.querySelector('.activeWebview').reload()">Set User Agent to IE</button><br><br>
+<button onclick="document.querySelector('.activeWebview').setUserAgent('Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.7.5) Gecko/20070321 Netscape/8.1.3'); document.querySelector('.activeWebview').reload()">Set User Agent to Netscape</button>
+<button onclick="document.querySelector('.activeWebview').setUserAgent('Mozilla/4.79 (Win98; I)'); document.querySelector('.activeWebview').reload(); notify('Please note: This User Agent is of a Very old version of Netscape most websites will not work', 1000)">Set User Agent to Netscape 4.79</button>
+<br>
 </div>
+
+<div class="sidebarApp hidden" id="history">
+<h1>History</h1>
+<input type="checkbox" onchange="incognito = this.checked; notify('Incognito Status updated: '+incognito, 500)"><span>Incognito</span><br>
+<button onclick="history = ''">Clear History</button>
+<p id="historyText"></p>
+</div>
+
+
 
 <div id="tabbar"><div class="tab" style="font-size:1.4rem; width:55px;" onclick="newTab(homepage)"><p>+</p></div><div style="width:20%;"></div><input class="tab" id="bar" placeholder="Search the Web or Enter URL"></div>
 `;
 newContainerEl.id = "root_container";
 newContainerEl.style.height="100vh";
 document.body.appendChild(newContainerEl);
+newSidebarPage("https://wikipedia.org/");
 }
 
 startup();
@@ -141,6 +171,7 @@ function newTab(url){
     newWebview.style.display='flex';
     newTabEl.classList.add("active");
     });
+
     newWebview.addEventListener("update-target-url", (event) => {
         if (event.url){
             updateAddress = false;
@@ -151,8 +182,17 @@ function newTab(url){
             addressBarEl.style.border="none";
         }
     });
+
+    newWebview.addEventListener("will-navigate", (event) => {
+        let url = event.url;
+          if (!incognito){
+             history += "<br><br>"+url;
+        }
+    });
+
     newTabEl.addEventListener("contextmenu", () => {
         deselectTabs();
+        lastClosedTab = newWebview.getURL();
     newWebview.outerHTML="";
     newTabEl.outerHTML="";
     document.querySelector(".tab").click();
@@ -179,6 +219,7 @@ function update(){
     } else {
         document.getElementById("goForward").style.display="none";
     }
+    document.getElementById("historyText").innerHTML = history;
 }
 
 setInterval(update, 1);
@@ -200,6 +241,9 @@ if (event.key.toLowerCase() == "enter"){
     document.querySelector(".activeWebview").loadURL(addressBarEl.value);
     document.querySelector(".activeWebview").focus();
     }
+    if (!incognito){
+        history += "<br><br>"+addressBarEl.value;
+    }
 }
 });
 
@@ -207,11 +251,12 @@ if (event.key.toLowerCase() == "enter"){
 function toggleSettings(){
     document.querySelector("#settings").classList.toggle("hidden");
 }
-function toggleWikipedia(){
-    document.querySelector("#wikipedia").classList.toggle("hidden");
-}
+
 function toggleDevTools(){
     document.querySelector("#devTools").classList.toggle("hidden");
+}
+function toggleHistory(){
+    document.querySelector("#history").classList.toggle("hidden");
 }
 function newSidebarPage(url){
     let newSidebarPageEl = document.createElement("h1");
@@ -223,6 +268,9 @@ function newSidebarPage(url){
     newWebviewEl.innerHTML=`<webview src="${url}" style="height:100%; width:100%; display:flex;"></webview>`;
     newSidebarPageEl.addEventListener("click", () => {
         newWebviewEl.classList.toggle("hidden");
+    });
+    newWebviewEl.querySelector("webview").addEventListener("page-favicon-updated", (event) => {
+        newSidebarPageEl.innerHTML=`<img src="${event.favicons[0]}" alt="" onerror="this.parentElement.innerText='${url.toUpperCase().split('/')[2].split('')[0]}'" height="20">`;
     });
     newSidebarPageEl.addEventListener("contextmenu", () => {
         newSidebarPageEl.outerHTML = '';
@@ -259,10 +307,31 @@ function readingMode(){
     }).catch(err => console.error(err));
 }
 
+function notify(content, end){
+    let newPopup = document.createElement("div");
+    newPopup.style.position="fixed";
+    newPopup.style.width="100%";
+    newPopup.style.height="50px";
+    newPopup.style.backgroundColor="black";
+    newPopup.style.color="white";
+    newPopup.style.display="flex";
+    newPopup.style.alignItems="center";
+    newPopup.style.justifyContent="center";
+    newPopup.style.zIndex="10000000000000000000000";
+    newPopup.innerHTML=content;
+    document.body.prepend(newPopup);
+    setTimeout(() => {
+        newPopup.outerHTML='';
+    }, end);
+}
+
 
 let newScript = document.createElement("script");
 newScript.textContent = `window.electronAPI.onOpenNewTab((url) => {
   console.log(url);
+  if (!incognito){
+  history += "<br><br>"+url;
+  }
   newTab(url);
 });
 `;
