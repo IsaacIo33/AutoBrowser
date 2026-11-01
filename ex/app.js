@@ -1,7 +1,7 @@
 let homepage = "https://google.com";
-let searchURL = "https://google.com/search?q=";
+let searchURL = "https://google.com/search?udm=14&q=";
 let tabbarEl = document.getElementById("tabbar");
-let version = "1.0.0.2";
+let version = "1.0.0.3";
 let updateAddress = true;
 let lastClosedTab = "unset";
 let history = "";
@@ -10,16 +10,19 @@ let incognito = false;
 
 /* Whats new:
 
- -- Now Website Sidebar pages have the Page's favicon instead of the letter if the page has a favicon.
- -- Added User Agent settings to Developer Tools.
- -- Redesigned Buttons, Inputs and Dropdowns in Sidebar Pages.
- -- Now you can scroll in Sidebar pages.
- -- Added the restore last closed tab button in Settings.
- -- Added Home Button
- -- Added Custom Color text to Settings.
- -- Updated the Wikipedia Sidebar Page to be removable on right-click.
- -- Add Browsing History and Incognito.
- -- Improvements in Developer Tools
+ -- Fixed a bug where Google NO AI was not the default search engine.
+ -- Added Website Customize Settings to Settings.
+ -- Fixed 5 Startup bugs.
+ -- Added Page Favicons to Tabs.
+ -- Added the Toggle Developer Tools button to Settings.
+ -- Improved Tab Bar UI with multiple tabs.
+ -- Added an Address bar to Website Sidebar Pages.
+ -- Renamed "Website Sidebar Pages" to "Mini Sidebar Browser".
+ -- Added a Back and Forward button to the Mini Sidebar Browsers.
+ -- Fixed Spelling issue.
+ -- Now if you click an Image while holding down the Control key it opens the image in a new tab.
+ -- Added a move to tab button on the Sidebar mini browser.
+ -- Added a View Page Source Code Button to the Developer Tools.
 
 */
 
@@ -36,7 +39,7 @@ newContainerEl.innerHTML=`
 <h1 onclick="toggleSettings();"><i class="fa-solid fa-gear"></i></h1>
 <h1 onclick="document.querySelector('.activeWebview').print()" id="printOpenBtn"><i class="fa-solid fa-print"></i></h1>
 <h1 onclick="readingMode()" id="readOpenBtn"><i class="fa-solid fa-book-open"></i></h1>
-<h1 onclick="toggleDevTools()"><i class="fa-solid fa-code"></i></h1>
+<h1 onclick="toggleDevTools()" id="devToolsOpenBtn"><i class="fa-solid fa-code"></i></h1>
 <h1 onclick="toggleHistory()" id="historyOpenBtn"><i class="fa-solid fa-clock-rotate-left"></i></h1>
 </div>
 
@@ -72,17 +75,19 @@ newContainerEl.innerHTML=`
 </select>
 <p>Custom Search Engine: (Include https://)</p>
 <input onchange="searchURL = this.value" type="text" placeholder="Enter Search URL with query at end" style="width:80%;">
-<p>Sidebar Pages: (Include https://)</p>
+<p>Mini Sidebar Browser (formerly Sidebar Pages): (Include https://)</p>
 <input onchange="newSidebarPage(this.value)" placeholder="Enter URL"><br><br>
 <button onclick="newSidebarPage(document.querySelector('.activeWebview').getURL())">Add current Website</button>
 <p>Tab and Sidebar:</p>
-<button onclick="if (lastClosedTab !== 'unset'){ newTab(lastClosedTab); }">Restore last closed tab</button>
-<button onclick="document.getElementById('homeBtn').classList.toggle('hidden')">Toggle Home Button</button>
-<button onclick="document.getElementById('historyOpenBtn').classList.toggle('hidden')">Toggle History Button</button>
-<button onclick="document.getElementById('readOpenBtn').classList.toggle('hidden')">Toggle Reading Mode Button</button>
-<button onclick="document.getElementById('printOpenBtn').classList.toggle('hidden')">Toggle Print Button</button>
-
-
+<button onclick="if (lastClosedTab !== 'unset'){ newTab(lastClosedTab); }">Restore last closed tab</button><br>
+<button onclick="document.getElementById('homeBtn').classList.toggle('hidden')">Toggle Home Button</button><br>
+<button onclick="document.getElementById('historyOpenBtn').classList.toggle('hidden')">Toggle History Button</button><br>
+<button onclick="document.getElementById('readOpenBtn').classList.toggle('hidden')">Toggle Reading Mode Button</button><br>
+<button onclick="document.getElementById('printOpenBtn').classList.toggle('hidden')">Toggle Print Button</button><br>
+<button onclick="document.getElementById('devToolsOpenBtn').classList.toggle('hidden')">Toggle Developer Tools Button</button><br>
+<p>Website Customize Settings:</p>
+<button onclick="document.querySelector('.activeWebview').setUserAgent('Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.74 Mobile Safari/537.36'); document.querySelector('.activeWebview').reload()">Mobile Mode</button>
+<button onclick="document.querySelector('.activeWebview').executeJavaScript('document.body.style.filter=\`grayscale(1)\`;')">Grayscale</button>
 <p>About:</p>
 <div style="display:flex; align-items:center: text-align:center; justify-content:space-around;">
 <img src="images/icon.png" alt="A" height="50">
@@ -97,11 +102,12 @@ newContainerEl.innerHTML=`
 <div class="sidebarApp hidden" id="devTools">
 <h1>Developer Tools</h1>
 <button onclick="document.querySelector('.activeWebview').openDevTools()">Standard Chrome Developer tools</button><br>
+<button onclick="newTab('view-source:'+document.querySelector('.activeWebview').getURL())">View Page Source Code</button>
 <p>Multi-line JavaScript runner: (Runs on active webview)</p>
 <textarea onchange="document.querySelector('.activeWebview').executeJavaScript(this.value)" placeholder="Enter JavaScript code..." style="height:200px; width:300px; background-color:black; color:white;"></textarea>
 <hr>
 <br>
-<button onclick="document.querySelector('.activeWebview').reloadIgnoringCache()">Reload igoring Cache</button><br><br>
+<button onclick="document.querySelector('.activeWebview').reloadIgnoringCache()">Reload ignoring Cache</button><br><br>
 <p>Multi-line CSS inserter: (Runs on active webview)</p>
 <textarea onchange="document.querySelector('.activeWebview').executeJavaScript('let newStyle = document.createElement(\`style\`); newStyle.textContent=\`'+this.value+'\`; document.body.appendChild(newStyle);')" placeholder="Enter CSS code..." style="height:200px; width:300px; background-color:black; color:white;"></textarea>
 <hr>
@@ -123,7 +129,7 @@ newContainerEl.innerHTML=`
 
 
 
-<div id="tabbar"><div class="tab" style="font-size:1.4rem; width:55px;" onclick="newTab(homepage)"><p>+</p></div><div style="width:20%;"></div><input class="tab" id="bar" placeholder="Search the Web or Enter URL"></div>
+<div id="tabbar"><div class="tab" style="font-size:1.4rem; width:55px;" onclick="newTab(homepage)"><p>+</p></div><div style="width:20%;" id="extraTabMargin"></div><input class="tab" id="bar" placeholder="Search the Web or Enter URL"></div>
 `;
 newContainerEl.id = "root_container";
 newContainerEl.style.height="100vh";
@@ -186,8 +192,22 @@ function newTab(url){
     newWebview.addEventListener("will-navigate", (event) => {
         let url = event.url;
           if (!incognito){
-             history += "<br><br>"+url;
+             history += "<br><br><p>"+url+"</p>";
         }
+    });
+
+    newWebview.addEventListener("page-favicon-updated", (event) => {
+        newTabEl.style.backgroundImage=`url(${event.favicons[0]})`;
+    });
+
+    newWebview.addEventListener("dom-ready", () => {
+        newWebview.executeJavaScript(`
+        document.addEventListener("click", (event) => {
+            if (event.target.tagName.toLowerCase() == "img" && event.ctrlKey){
+                window.open(event.target.src, "_blank");
+            }
+        });
+            `);
     });
 
     newTabEl.addEventListener("contextmenu", () => {
@@ -203,12 +223,20 @@ function newTab(url){
 }
 
 function update(){
+    if (document.querySelector('.activeWebview')){
+
+
     document.querySelector(".active").innerText = document.querySelector(".activeWebview").getTitle();
     document.title = `${document.querySelector(".activeWebview").getTitle()} - AutoBrowser`;
+
     if (document.activeElement !== addressBarEl && updateAddress){
     addressBarEl.value = document.querySelector(".activeWebview").getURL();
     }
+
+
     document.querySelector(".active").innerHTML = document.querySelector(".active").innerText.split(" ").join("&nbsp;");
+    
+
     if (document.querySelector('.activeWebview').canGoBack()){
         document.getElementById("goBack").style.display="block";
     } else {
@@ -219,7 +247,9 @@ function update(){
     } else {
         document.getElementById("goForward").style.display="none";
     }
+    }
     document.getElementById("historyText").innerHTML = history;
+    document.getElementById("extraTabMargin").style.width = `${20 - document.querySelectorAll('.tab').length*2 - 2}%`;
 }
 
 setInterval(update, 1);
@@ -242,7 +272,7 @@ if (event.key.toLowerCase() == "enter"){
     document.querySelector(".activeWebview").focus();
     }
     if (!incognito){
-        history += "<br><br>"+addressBarEl.value;
+        history += "<br><br><p>"+addressBarEl.value+"</p>";
     }
 }
 });
@@ -265,12 +295,28 @@ function newSidebarPage(url){
     let newWebviewEl = document.createElement("div");
     newWebviewEl.classList.add("sidebarApp");
     newWebviewEl.classList.add("hidden");
-    newWebviewEl.innerHTML=`<webview src="${url}" style="height:100%; width:100%; display:flex;"></webview>`;
+    newWebviewEl.style.overflow="hidden";
+    newWebviewEl.innerHTML=`
+    <button onclick="this.parentElement.querySelector('webview').goBack()" style="width:5%;"><i class="fa-solid fa-chevron-left"></i></button>
+    <button onclick="this.parentElement.querySelector('webview').goForward()" style="width:5%;"><i class="fa-solid fa-chevron-right"></i></button>
+    <input placeholder="Enter URL..." style="width:80%; height:15px;">
+    <button onclick="newTab(this.parentElement.querySelector('webview').getURL()); this.parentElement.classList.add('hidden')" style="width:5%;"><i class="fa-solid fa-file-export"></i></button>
+    <webview src="${url}" style="height:calc(100% - 15px); width:100%; display:flex;"></webview>`;
     newSidebarPageEl.addEventListener("click", () => {
         newWebviewEl.classList.toggle("hidden");
     });
     newWebviewEl.querySelector("webview").addEventListener("page-favicon-updated", (event) => {
         newSidebarPageEl.innerHTML=`<img src="${event.favicons[0]}" alt="" onerror="this.parentElement.innerText='${url.toUpperCase().split('/')[2].split('')[0]}'" height="20">`;
+    });
+    newWebviewEl.querySelector("webview").addEventListener("did-navigate", (event) => {
+        if (newWebviewEl.querySelector("input") !== document.activeElement){
+        newWebviewEl.querySelector("input").value = event.url;
+        }
+    });
+    newWebviewEl.querySelector("input").addEventListener("keydown", (event) => {
+        if (event.key == "Enter"){
+            newWebviewEl.querySelector("webview").loadURL(newWebviewEl.querySelector("input").value);
+        }
     });
     newSidebarPageEl.addEventListener("contextmenu", () => {
         newSidebarPageEl.outerHTML = '';
@@ -326,13 +372,22 @@ function notify(content, end){
 }
 
 
+
+
+
+
+
+
+
+
 let newScript = document.createElement("script");
 newScript.textContent = `window.electronAPI.onOpenNewTab((url) => {
   console.log(url);
   if (!incognito){
-  history += "<br><br>"+url;
+  history += "<br><br><p>"+url+"</p>";
   }
   newTab(url);
 });
 `;
 document.body.appendChild(newScript);
+
