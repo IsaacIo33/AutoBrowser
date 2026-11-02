@@ -1,7 +1,7 @@
 let homepage = "https://google.com";
 let searchURL = "https://google.com/search?udm=14&q=";
 let tabbarEl = document.getElementById("tabbar");
-let version = "1.0.0.4";
+let version = "1.0.0.5";
 let updateAddress = true;
 let lastClosedTab = "unset";
 let history = "";
@@ -10,14 +10,8 @@ let incognito = false;
 
 /* Whats new:
 
- -- Reworded Text in Settings.
- -- Improved the layout of Settings.
- -- Redesigned Sidebar buttons.
- -- Fixed a bug where the Back and forward button's content were not in the center of the button.
- -- Added a reload button to the Mini Sidebar Browser(s).
- -- Fixed a bug where when you use the Ctrl click image shortcut it will act as a click and the website's default action would run along side it which mostly would result in it opening 2 tabs instead of just 1 tab like it should.
- -- Added a title heading to Reading Mode.
- -- Added a new Custom User Agent feature to Developer Tools.
+ -- Added line breaks to the bottom of Settings.
+ -- Now you can type in file:// urls in the address bar.
 
 */
 
@@ -94,7 +88,7 @@ newContainerEl.innerHTML=`
 </div>
 <button onclick="newTab('http://ioposts.farleyengineeredsolutions.com/auto/releases.html')">Releases</button>
 <button onclick="newTab('http://ioposts.farleyengineeredsolutions.com/auto/')">Website</button>
-
+<br><br>
 </div>
 
 
@@ -263,8 +257,11 @@ setTimeout(() => {
 
 addressBarEl.addEventListener("keydown", (event) => {
 if (event.key.toLowerCase() == "enter"){
-    if (addressBarEl.value.includes(" ") || !addressBarEl.value.split(".")[1] || addressBarEl.value.split(".")[1] == ''){
+    if (!addressBarEl.value.startsWith("file:") && addressBarEl.value.includes(" ") || !addressBarEl.value.split(".")[1] || addressBarEl.value.split(".")[1] == ''){
     document.querySelector(".activeWebview").loadURL(searchURL+addressBarEl.value);
+    document.querySelector(".activeWebview").focus();
+    } else if (addressBarEl.value.startsWith("file:")){
+    document.querySelector(".activeWebview").loadURL(addressBarEl.value);
     document.querySelector(".activeWebview").focus();
     } else if (!addressBarEl.value.startsWith("http")){
     document.querySelector(".activeWebview").loadURL("http://"+addressBarEl.value);
@@ -393,4 +390,3 @@ newScript.textContent = `window.electronAPI.onOpenNewTab((url) => {
 });
 `;
 document.body.appendChild(newScript);
-
