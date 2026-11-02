@@ -8,12 +8,13 @@ let history = "";
 let incognito = false;
 let whatsnew = `
 
- -- Added line breaks to the bottom of Settings.
- -- Now you can type in file:// urls in the address bar.
- -- Updated an Internal API.
- -- Added a Whats new button.
- -- Added a Loading line that appears when the active webview is loading.
- -- Removed Border Radius from Buttons are in Sidebar pages and Mini Sidebar Browsers.
+ -- Added line breaks to the bottom of Settings. (IsaacIo33)
+ -- Now you can type in file:// urls in the address bar. (IsaacIo33)
+ -- Updated an Internal API. (IsaacIo33)
+ -- Added a Whats new button. (IsaacIo33)
+ -- Added a Loading line that appears when the active webview is loading. (IsaacIo33)
+ -- Removed Border Radius from Buttons are in Sidebar pages and Mini Sidebar Browsers. (IsaacIo33)
+ -- Fixed a bug that allows sidebar apps to stack. (vikenaitProductions)
 
 `;
 
@@ -287,15 +288,24 @@ if (event.key.toLowerCase() == "enter"){
 }
 });
 
+function clearSidebars() {
+  for (let i = 0; i < document.querySelectorAll(".sidebarApp").length; i++) {
+    document.querySelectorAll(".sidebarApp")[i].classList.add("hidden");
+  }
+}
+
 
 function toggleSettings(){
+    clearSidebars();
     document.querySelector("#settings").classList.toggle("hidden");
 }
 
 function toggleDevTools(){
+    clearSidebars();
     document.querySelector("#devTools").classList.toggle("hidden");
 }
 function toggleHistory(){
+    clearSidebars();
     document.querySelector("#history").classList.toggle("hidden");
 }
 function newSidebarPage(url){
@@ -314,6 +324,7 @@ function newSidebarPage(url){
     <button onclick="newTab(this.parentElement.querySelector('webview').getURL()); this.parentElement.classList.add('hidden')" style="width:5%;"><i class="fa-solid fa-file-export"></i></button>
     <webview src="${url}" style="height:calc(100% - 15px); width:100%; display:flex;"></webview>`;
     newSidebarPageEl.addEventListener("click", () => {
+        clearSidebars();
         newWebviewEl.classList.toggle("hidden");
     });
     newWebviewEl.querySelector("webview").addEventListener("page-favicon-updated", (event) => {
