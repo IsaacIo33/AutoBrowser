@@ -1,7 +1,7 @@
 let homepage = "https://google.com";
 let searchURL = "https://google.com/search?udm=14&q=";
 let tabbarEl = document.getElementById("tabbar");
-let version = "1.0.0.3";
+let version = "1.0.0.4";
 let updateAddress = true;
 let lastClosedTab = "unset";
 let history = "";
@@ -10,19 +10,14 @@ let incognito = false;
 
 /* Whats new:
 
- -- Fixed a bug where Google NO AI was not the default search engine.
- -- Added Website Customize Settings to Settings.
- -- Fixed 5 Startup bugs.
- -- Added Page Favicons to Tabs.
- -- Added the Toggle Developer Tools button to Settings.
- -- Improved Tab Bar UI with multiple tabs.
- -- Added an Address bar to Website Sidebar Pages.
- -- Renamed "Website Sidebar Pages" to "Mini Sidebar Browser".
- -- Added a Back and Forward button to the Mini Sidebar Browsers.
- -- Fixed Spelling issue.
- -- Now if you click an Image while holding down the Control key it opens the image in a new tab.
- -- Added a move to tab button on the Sidebar mini browser.
- -- Added a View Page Source Code Button to the Developer Tools.
+ -- Reworded Text in Settings.
+ -- Improved the layout of Settings.
+ -- Redesigned Sidebar buttons.
+ -- Fixed a bug where the Back and forward button's content were not in the center of the button.
+ -- Added a reload button to the Mini Sidebar Browser(s).
+ -- Fixed a bug where when you use the Ctrl click image shortcut it will act as a click and the website's default action would run along side it which mostly would result in it opening 2 tabs instead of just 1 tab like it should.
+ -- Added a title heading to Reading Mode.
+ -- Added a new Custom User Agent feature to Developer Tools.
 
 */
 
@@ -78,13 +73,17 @@ newContainerEl.innerHTML=`
 <p>Mini Sidebar Browser (formerly Sidebar Pages): (Include https://)</p>
 <input onchange="newSidebarPage(this.value)" placeholder="Enter URL"><br><br>
 <button onclick="newSidebarPage(document.querySelector('.activeWebview').getURL())">Add current Website</button>
-<p>Tab and Sidebar:</p>
+<br>
+<fieldset>
+<legend><p>Tabs and Sidebar:</p></legend>
 <button onclick="if (lastClosedTab !== 'unset'){ newTab(lastClosedTab); }">Restore last closed tab</button><br>
 <button onclick="document.getElementById('homeBtn').classList.toggle('hidden')">Toggle Home Button</button><br>
+<hr>
 <button onclick="document.getElementById('historyOpenBtn').classList.toggle('hidden')">Toggle History Button</button><br>
 <button onclick="document.getElementById('readOpenBtn').classList.toggle('hidden')">Toggle Reading Mode Button</button><br>
 <button onclick="document.getElementById('printOpenBtn').classList.toggle('hidden')">Toggle Print Button</button><br>
 <button onclick="document.getElementById('devToolsOpenBtn').classList.toggle('hidden')">Toggle Developer Tools Button</button><br>
+</fieldset>
 <p>Website Customize Settings:</p>
 <button onclick="document.querySelector('.activeWebview').setUserAgent('Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.74 Mobile Safari/537.36'); document.querySelector('.activeWebview').reload()">Mobile Mode</button>
 <button onclick="document.querySelector('.activeWebview').executeJavaScript('document.body.style.filter=\`grayscale(1)\`;')">Grayscale</button>
@@ -118,6 +117,8 @@ newContainerEl.innerHTML=`
 <button onclick="document.querySelector('.activeWebview').setUserAgent('Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.7.5) Gecko/20070321 Netscape/8.1.3'); document.querySelector('.activeWebview').reload()">Set User Agent to Netscape</button>
 <button onclick="document.querySelector('.activeWebview').setUserAgent('Mozilla/4.79 (Win98; I)'); document.querySelector('.activeWebview').reload(); notify('Please note: This User Agent is of a Very old version of Netscape most websites will not work', 1000)">Set User Agent to Netscape 4.79</button>
 <br>
+<p>Custom User Agent:</p>
+<textarea onchange="document.querySelector('.activeWebview').setUserAgent(this.value); document.querySelector('.activeWebview').reload()" placeholder="Enter User Agent"></textarea>
 </div>
 
 <div class="sidebarApp hidden" id="history">
@@ -204,6 +205,7 @@ function newTab(url){
         newWebview.executeJavaScript(`
         document.addEventListener("click", (event) => {
             if (event.target.tagName.toLowerCase() == "img" && event.ctrlKey){
+                event.preventDefault();
                 window.open(event.target.src, "_blank");
             }
         });
@@ -238,12 +240,12 @@ function update(){
     
 
     if (document.querySelector('.activeWebview').canGoBack()){
-        document.getElementById("goBack").style.display="block";
+        document.getElementById("goBack").style.display="flex";
     } else {
         document.getElementById("goBack").style.display="none";
     }
     if (document.querySelector('.activeWebview').canGoForward()){
-        document.getElementById("goForward").style.display="block";
+        document.getElementById("goForward").style.display="flex";
     } else {
         document.getElementById("goForward").style.display="none";
     }
@@ -297,9 +299,10 @@ function newSidebarPage(url){
     newWebviewEl.classList.add("hidden");
     newWebviewEl.style.overflow="hidden";
     newWebviewEl.innerHTML=`
+    <button onclick="this.parentElement.querySelector('webview').reload()" style="width:5%;"><i class="fa-solid fa-rotate-right"></i></button>
     <button onclick="this.parentElement.querySelector('webview').goBack()" style="width:5%;"><i class="fa-solid fa-chevron-left"></i></button>
     <button onclick="this.parentElement.querySelector('webview').goForward()" style="width:5%;"><i class="fa-solid fa-chevron-right"></i></button>
-    <input placeholder="Enter URL..." style="width:80%; height:15px;">
+    <input placeholder="Enter URL..." style="width:75%; height:15px;">
     <button onclick="newTab(this.parentElement.querySelector('webview').getURL()); this.parentElement.classList.add('hidden')" style="width:5%;"><i class="fa-solid fa-file-export"></i></button>
     <webview src="${url}" style="height:calc(100% - 15px); width:100%; display:flex;"></webview>`;
     newSidebarPageEl.addEventListener("click", () => {
@@ -337,7 +340,7 @@ function readingMode(){
         document.reading = true;
         let READING_MODE_CONTENT = document.body.innerText;
         let newReadingMode = document.createElement("iframe");
-        newReadingMode.srcdoc = "<br><pre style='font-family:sans-serif;'>"+READING_MODE_CONTENT+"</pre>";
+        newReadingMode.srcdoc = "<br><pre style='font-family:sans-serif;'><h1>"+document.title+"</h1>"+READING_MODE_CONTENT+"</pre>";
         newReadingMode.style.position="fixed";
         newReadingMode.setAttribute("frameborder", "0");
         newReadingMode.style.left="0";
@@ -390,4 +393,3 @@ newScript.textContent = `window.electronAPI.onOpenNewTab((url) => {
 });
 `;
 document.body.appendChild(newScript);
-
