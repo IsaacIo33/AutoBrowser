@@ -6,14 +6,16 @@ let updateAddress = true;
 let lastClosedTab = "unset";
 let history = "";
 let incognito = false;
+let whatsnew = `
+
+ -- Added line breaks to the bottom of Settings.<br>
+ -- Now you can type in file:// urls in the address bar.<br>
+ -- Updated an Internal API.<br>
+ -- Added a Whats new button.<br>
 
 
-/* Whats new:
+`;
 
- -- Added line breaks to the bottom of Settings.
- -- Now you can type in file:// urls in the address bar.
-
-*/
 
 function startup(){
 let newContainerEl = document.createElement("div");
@@ -88,6 +90,7 @@ newContainerEl.innerHTML=`
 </div>
 <button onclick="newTab('http://ioposts.farleyengineeredsolutions.com/auto/releases.html')">Releases</button>
 <button onclick="newTab('http://ioposts.farleyengineeredsolutions.com/auto/')">Website</button>
+<button onclick="notify(whatsnew, 3000, '400px')">Whats New</button>
 <br><br>
 </div>
 
@@ -353,11 +356,15 @@ function readingMode(){
     }).catch(err => console.error(err));
 }
 
-function notify(content, end){
+function notify(content, end, height){
     let newPopup = document.createElement("div");
     newPopup.style.position="fixed";
     newPopup.style.width="100%";
+    if (!height){ 
     newPopup.style.height="50px";
+    } else {
+    newPopup.style.height=height;
+    }
     newPopup.style.backgroundColor="black";
     newPopup.style.color="white";
     newPopup.style.display="flex";
