@@ -15,6 +15,8 @@ let whatsnew = `
  -- Added a Loading line that appears when the active webview is loading. (IsaacIo33)
  -- Removed Border Radius from Buttons are in Sidebar pages and Mini Sidebar Browsers. (IsaacIo33)
  -- Fixed a bug that allows sidebar apps to stack. (vikenaitProductions)
+ -- Fixed a bug where you couldn't toggle Sidebar pages. (IsaacIo33)
+ -- Added a Add Current website as a Sidebar Mini Browser button to the Sidebar. (IsaacIo33)
 
 `;
 
@@ -34,6 +36,7 @@ newContainerEl.innerHTML=`
 <h1 onclick="readingMode()" id="readOpenBtn"><i class="fa-solid fa-book-open"></i></h1>
 <h1 onclick="toggleDevTools()" id="devToolsOpenBtn"><i class="fa-solid fa-code"></i></h1>
 <h1 onclick="toggleHistory()" id="historyOpenBtn"><i class="fa-solid fa-clock-rotate-left"></i></h1>
+<h1 onclick="newSidebarPage(document.querySelector('.activeWebview').getURL())"><i class="fa-regular fa-square-plus"></i></h1>
 </div>
 
 
@@ -288,24 +291,26 @@ if (event.key.toLowerCase() == "enter"){
 }
 });
 
-function clearSidebars() {
+function clearSidebars(element) {
   for (let i = 0; i < document.querySelectorAll(".sidebarApp").length; i++) {
+    if (element !== document.querySelectorAll(".sidebarApp")[i]){
     document.querySelectorAll(".sidebarApp")[i].classList.add("hidden");
+    }
   }
 }
 
 
 function toggleSettings(){
-    clearSidebars();
+    clearSidebars(document.querySelector("#settings"));
     document.querySelector("#settings").classList.toggle("hidden");
 }
 
 function toggleDevTools(){
-    clearSidebars();
+    clearSidebars(document.querySelector("#devTools"));
     document.querySelector("#devTools").classList.toggle("hidden");
 }
 function toggleHistory(){
-    clearSidebars();
+    clearSidebars(document.querySelector("#history"));
     document.querySelector("#history").classList.toggle("hidden");
 }
 function newSidebarPage(url){
@@ -324,7 +329,7 @@ function newSidebarPage(url){
     <button onclick="newTab(this.parentElement.querySelector('webview').getURL()); this.parentElement.classList.add('hidden')" style="width:5%;"><i class="fa-solid fa-file-export"></i></button>
     <webview src="${url}" style="height:calc(100% - 15px); width:100%; display:flex;"></webview>`;
     newSidebarPageEl.addEventListener("click", () => {
-        clearSidebars();
+        clearSidebars(newWebviewEl);
         newWebviewEl.classList.toggle("hidden");
     });
     newWebviewEl.querySelector("webview").addEventListener("page-favicon-updated", (event) => {
