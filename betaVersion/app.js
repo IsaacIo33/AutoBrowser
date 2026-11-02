@@ -8,11 +8,12 @@ let history = "";
 let incognito = false;
 let whatsnew = `
 
- -- Added line breaks to the bottom of Settings.<br>
- -- Now you can type in file:// urls in the address bar.<br>
- -- Updated an Internal API.<br>
- -- Added a Whats new button.<br>
-
+ -- Added line breaks to the bottom of Settings.
+ -- Now you can type in file:// urls in the address bar.
+ -- Updated an Internal API.
+ -- Added a Whats new button.
+ -- Added a Loading line that appears when the active webview is loading.
+ -- Removed Border Radius from Buttons are in Sidebar pages and Mini Sidebar Browsers.
 
 `;
 
@@ -246,6 +247,13 @@ function update(){
     } else {
         document.getElementById("goForward").style.display="none";
     }
+
+    if (document.querySelector(".activeWebview").isLoading()){
+        document.body.style.borderTop="4px solid var(--theme)";
+    } else {
+        document.body.style.borderTop="none";
+    }
+
     }
     document.getElementById("historyText").innerHTML = history;
     document.getElementById("extraTabMargin").style.width = `${20 - document.querySelectorAll('.tab').length*2 - 2}%`;
@@ -371,7 +379,7 @@ function notify(content, end, height){
     newPopup.style.alignItems="center";
     newPopup.style.justifyContent="center";
     newPopup.style.zIndex="10000000000000000000000";
-    newPopup.innerHTML=content;
+    newPopup.innerHTML=`<pre style="font-family:'Saira', system-ui, -apple-system, sans-serif;">${content}</pre>`;
     document.body.prepend(newPopup);
     setTimeout(() => {
         newPopup.outerHTML='';
