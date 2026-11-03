@@ -1,28 +1,35 @@
-let homepage = "https://google.com";
+let homepage = "https://isaacio33.github.io/auto-start-page";
 let searchURL = "https://google.com/search?udm=14&q=";
 let tabbarEl = document.getElementById("tabbar");
-let version = "1.0.0.5";
+let version = "1.0.0.6";
 let updateAddress = true;
 let lastClosedTab = "unset";
 let history = "";
 let incognito = false;
-let showBottomTitle = true;
+let showBottomTitle = false;
 let whatsnew = `
 
- -- Added line breaks to the bottom of Settings. (IsaacIo33)
- -- Now you can type in file:// urls in the address bar. (IsaacIo33)
- -- Updated an Internal API. (IsaacIo33)
- -- Added a Whats new button. (IsaacIo33)
- -- Added a Loading line that appears when the active webview is loading. (IsaacIo33)
- -- Removed Border Radius from Buttons are in Sidebar pages and Mini Sidebar Browsers. (IsaacIo33)
- -- Fixed a bug that allows sidebar apps to stack. (vikenaitProductions)
- -- Fixed a bug where you couldn't toggle Sidebar pages. (IsaacIo33)
- -- Added a Add Current website as a Sidebar Mini Browser button to the Sidebar. (IsaacIo33)
- -- Moved the Favicon to the left of the Tabs instead of the bottom right corner. (IsaacIo33)
- -- Now when you hover a tab it shows the full Title on the bottom of the Screen. (IsaacIo33)
+ -- Removed the Mini Side Browser section from Settings. (IsaacIo33)
+ -- Fixed 2 speed issues in AutoBrowser. (IsaacIo33)
+ -- Made the Sidebar smaller to give the webview more room. (IsaacIo33)
+ -- Made Tab Title previews disabled by default. (IsaacIo33)
+ -- Made Tabs slightly bigger. (IsaacIo33)
+ -- Moved the link that appears when the current webview is loading to the tab that the webview is on. (IsaacIo33)
+ -- Added a Credits button to Settings. (IsaacIo33)
+ -- Changed the default Home page from https://google.com/ to https://isaacio33.github.io/auto-start-page. (IsaacIo33)
+
+ `;
+
+let credits = `
+
+<h1>Credits</h1>
+
+<ul>
+<li>IsaacIo33 - Creator/Maintainer - https://github.com/IsaacIo33/</li>
+<li>vikenaitProductions - Maintainer - https://github.com/vikenaitProductions/</li>
+</ul>
 
 `;
-
 
 
 function startup(){
@@ -75,9 +82,11 @@ newContainerEl.innerHTML=`
 </select>
 <p>Custom Search Engine: (Include https://)</p>
 <input onchange="searchURL = this.value" type="text" placeholder="Enter Search URL with query at end" style="width:80%;">
+<!--
 <p>Mini Sidebar Browser (formerly Sidebar Pages): (Include https://)</p>
 <input onchange="newSidebarPage(this.value)" placeholder="Enter URL"><br><br>
 <button onclick="newSidebarPage(document.querySelector('.activeWebview').getURL())">Add current Website</button>
+-->
 <br>
 <fieldset>
 <legend><p>Tabs and Sidebar:</p></legend>
@@ -101,6 +110,7 @@ newContainerEl.innerHTML=`
 <button onclick="newTab('http://ioposts.farleyengineeredsolutions.com/auto/releases.html')">Releases</button>
 <button onclick="newTab('http://ioposts.farleyengineeredsolutions.com/auto/')">Website</button>
 <button onclick="notify(whatsnew, 3000, '400px')">Whats New</button>
+<button onclick="notify(credits, 5000, '400px')">Credits</button>
 <br><br>
 </div>
 
@@ -242,15 +252,13 @@ function update(){
     if (document.querySelector('.activeWebview')){
 
 
-    document.querySelector(".active span").innerText = document.querySelector(".activeWebview").getTitle();
+    document.querySelector(".active span").innerHTML = document.querySelector(".activeWebview").getTitle().replaceAll(" ", "&nbsp;");
     document.title = `${document.querySelector(".activeWebview").getTitle()} - AutoBrowser`;
 
     if (document.activeElement !== addressBarEl && updateAddress){
     addressBarEl.value = document.querySelector(".activeWebview").getURL();
     }
 
-
-    document.querySelector(".active span").innerHTML = document.querySelector(".active").innerText.split(" ").join("&nbsp;");
     
 
     if (document.querySelector('.activeWebview').canGoBack()){
@@ -265,9 +273,9 @@ function update(){
     }
 
     if (document.querySelector(".activeWebview").isLoading()){
-        document.body.style.borderTop="4px solid var(--theme)";
-    } else {
-        document.body.style.borderTop="none";
+        document.querySelector(".active").style.borderTop="4px solid var(--theme)";
+    } else if (document.querySelector(".active").style.borderTop !== "none" ) {
+        document.querySelector(".active").style.borderTop="none";
     }
 
     }
@@ -275,7 +283,7 @@ function update(){
     document.getElementById("extraTabMargin").style.width = `${20 - document.querySelectorAll('.tab').length*2 - 2}%`;
 }
 
-setInterval(update, 1);
+setInterval(update, 200);
 
 setTimeout(() => {
     newTab(homepage);
