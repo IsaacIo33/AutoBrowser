@@ -1,5 +1,6 @@
 :root {
     --theme: lightgray;
+    --sidebarWidth: 40px;
 }
 
 
@@ -26,7 +27,7 @@ body {
 
 .tab {
     height: 40px;
-    width: 10%;
+    width: 12%;
     background-color: rgba(255, 255, 255, 0);
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
@@ -45,15 +46,15 @@ body {
 }
 
 .tab span {
-    margin-left: 20px;
+    margin-left: 25px;
 }
 
 .webview {
     height: calc(100% - 50px);
     position: fixed;
     display: flex;
-    width: calc(100% - 50px);
-    margin-left: 50px;
+    width: calc(100% - var(--sidebarWidth));
+    margin-left: var(--sidebarWidth);
     z-index: 5;
 }
 
@@ -69,7 +70,7 @@ body {
    position: fixed;
    height: calc(100% - 50px);
    margin-top: 50px;
-   width: 50px;
+   width: var(--sidebarWidth);
     background-image: linear-gradient(80deg, rgba(255, 254, 254, 0.193), rgba(255, 254, 254, 0.624));
 }
 
@@ -77,8 +78,8 @@ body {
     /* border-radius: 5px; */
     padding:10px;
     font-size: 0.9rem;
-    width: 30px;
-    height: 30px;
+    width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -92,7 +93,7 @@ body {
 .sidebarApp {
     position: fixed;
     height: 100%;
-    margin-left: 50px;
+    margin-left: var(--sidebarWidth);
     background-color: rgba(201, 201, 201, 0.66);
     width: 45%;
     z-index: 10;
