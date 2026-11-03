@@ -6,6 +6,7 @@ let updateAddress = true;
 let lastClosedTab = "unset";
 let history = "";
 let incognito = false;
+let showBottomTitle = true;
 let whatsnew = `
 
  -- Added line breaks to the bottom of Settings. (IsaacIo33)
@@ -18,6 +19,7 @@ let whatsnew = `
  -- Fixed a bug where you couldn't toggle Sidebar pages. (IsaacIo33)
  -- Added a Add Current website as a Sidebar Mini Browser button to the Sidebar. (IsaacIo33)
  -- Moved the Favicon to the left of the Tabs instead of the bottom right corner. (IsaacIo33)
+ -- Now when you hover a tab it shows the full Title on the bottom of the Screen. (IsaacIo33)
 
 `;
 
@@ -81,6 +83,7 @@ newContainerEl.innerHTML=`
 <legend><p>Tabs and Sidebar:</p></legend>
 <button onclick="if (lastClosedTab !== 'unset'){ newTab(lastClosedTab); }">Restore last closed tab</button><br>
 <button onclick="document.getElementById('homeBtn').classList.toggle('hidden')">Toggle Home Button</button><br>
+<button onclick="showBottomTitle = !showBottomTitle">Toggle Title Previews</button><br>
 <hr>
 <button onclick="document.getElementById('historyOpenBtn').classList.toggle('hidden')">Toggle History Button</button><br>
 <button onclick="document.getElementById('readOpenBtn').classList.toggle('hidden')">Toggle Reading Mode Button</button><br>
@@ -223,6 +226,12 @@ function newTab(url){
     newWebview.outerHTML="";
     newTabEl.outerHTML="";
     document.querySelector(".tab").click();
+    });
+
+    newTabEl.addEventListener("mouseover", () => {
+        if (showBottomTitle){
+        notify(newWebview.getTitle(), 500, 30+"px", window.innerHeight - 30 + "px");
+        }
     });
 
 
@@ -383,7 +392,7 @@ function readingMode(){
     }).catch(err => console.error(err));
 }
 
-function notify(content, end, height){
+function notify(content, end, height, margintop){
     let newPopup = document.createElement("div");
     newPopup.style.position="fixed";
     newPopup.style.width="100%";
@@ -391,6 +400,9 @@ function notify(content, end, height){
     newPopup.style.height="50px";
     } else {
     newPopup.style.height=height;
+    }
+    if (margintop){
+    newPopup.style.marginTop=margintop;
     }
     newPopup.style.backgroundColor="black";
     newPopup.style.color="white";
