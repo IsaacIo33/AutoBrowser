@@ -17,8 +17,10 @@ let whatsnew = `
  -- Fixed a bug that allows sidebar apps to stack. (vikenaitProductions)
  -- Fixed a bug where you couldn't toggle Sidebar pages. (IsaacIo33)
  -- Added a Add Current website as a Sidebar Mini Browser button to the Sidebar. (IsaacIo33)
+ -- Moved the Favicon to the left of the Tabs instead of the bottom right corner. (IsaacIo33)
 
 `;
+
 
 
 function startup(){
@@ -164,6 +166,7 @@ function deselectTabs(){
 function newTab(url){
     deselectTabs();
     let newTabEl = document.createElement("div");
+    newTabEl.innerHTML="<span></span>";
     newTabEl.classList.add("tab");
     newTabEl.classList.add("active");
     tabbarEl.prepend(newTabEl);
@@ -230,7 +233,7 @@ function update(){
     if (document.querySelector('.activeWebview')){
 
 
-    document.querySelector(".active").innerText = document.querySelector(".activeWebview").getTitle();
+    document.querySelector(".active span").innerText = document.querySelector(".activeWebview").getTitle();
     document.title = `${document.querySelector(".activeWebview").getTitle()} - AutoBrowser`;
 
     if (document.activeElement !== addressBarEl && updateAddress){
@@ -238,7 +241,7 @@ function update(){
     }
 
 
-    document.querySelector(".active").innerHTML = document.querySelector(".active").innerText.split(" ").join("&nbsp;");
+    document.querySelector(".active span").innerHTML = document.querySelector(".active").innerText.split(" ").join("&nbsp;");
     
 
     if (document.querySelector('.activeWebview').canGoBack()){
