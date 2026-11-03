@@ -8,6 +8,7 @@ body {
     user-select: none;
     font-family: "Saira", system-ui, -apple-system, sans-serif;
     text-align: center;
+    overflow:hidden;
 }
 
 #root_container {
@@ -40,9 +41,12 @@ body {
     box-shadow: 1px -1px 1px lightgray;
     background-size: 15% 45%;
     background-repeat: no-repeat;
-    background-position: 100% 100%;
+    background-position: 3% 50%;
 }
 
+.tab span {
+    margin-left: 20px;
+}
 
 .webview {
     height: calc(100% - 50px);
@@ -105,8 +109,8 @@ body {
     border: 1px solid rgb(72, 73, 73);
     outline: none;
     padding: 5px;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
+    /* border-top-left-radius: 5px; */
+    /* border-top-right-radius: 5px; */
     background-image: linear-gradient(rgba(228, 226, 226, 0.62), rgba(220, 220, 220, 0.538));
 }
 
