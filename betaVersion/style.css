@@ -41,7 +41,11 @@ body {
     box-shadow: 1px -1px 1px lightgray;
     background-size: 15% 45%;
     background-repeat: no-repeat;
-    background-position: 100% 100%;
+    background-position: 3% 50%;
+}
+
+.tab span {
+    margin-left: 20px;
 }
 
 .webview {
