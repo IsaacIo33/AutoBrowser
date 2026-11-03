@@ -1,25 +1,29 @@
 let homepage = "https://google.com";
 let searchURL = "https://google.com/search?udm=14&q=";
 let tabbarEl = document.getElementById("tabbar");
-let version = "1.0.0.4";
+let version = "1.0.0.5";
 let updateAddress = true;
 let lastClosedTab = "unset";
 let history = "";
 let incognito = false;
+let showBottomTitle = true;
+let whatsnew = `
+
+ -- Added line breaks to the bottom of Settings. (IsaacIo33)
+ -- Now you can type in file:// urls in the address bar. (IsaacIo33)
+ -- Updated an Internal API. (IsaacIo33)
+ -- Added a Whats new button. (IsaacIo33)
+ -- Added a Loading line that appears when the active webview is loading. (IsaacIo33)
+ -- Removed Border Radius from Buttons are in Sidebar pages and Mini Sidebar Browsers. (IsaacIo33)
+ -- Fixed a bug that allows sidebar apps to stack. (vikenaitProductions)
+ -- Fixed a bug where you couldn't toggle Sidebar pages. (IsaacIo33)
+ -- Added a Add Current website as a Sidebar Mini Browser button to the Sidebar. (IsaacIo33)
+ -- Moved the Favicon to the left of the Tabs instead of the bottom right corner. (IsaacIo33)
+ -- Now when you hover a tab it shows the full Title on the bottom of the Screen. (IsaacIo33)
+
+`;
 
 
-/* Whats new:
-
- -- Reworded Text in Settings.
- -- Improved the layout of Settings.
- -- Redesigned Sidebar buttons.
- -- Fixed a bug where the Back and forward button's content were not in the center of the button.
- -- Added a reload button to the Mini Sidebar Browser(s).
- -- Fixed a bug where when you use the Ctrl click image shortcut it will act as a click and the website's default action would run along side it which mostly would result in it opening 2 tabs instead of just 1 tab like it should.
- -- Added a title heading to Reading Mode.
- -- Added a new Custom User Agent feature to Developer Tools.
-
-*/
 
 function startup(){
 let newContainerEl = document.createElement("div");
@@ -36,6 +40,7 @@ newContainerEl.innerHTML=`
 <h1 onclick="readingMode()" id="readOpenBtn"><i class="fa-solid fa-book-open"></i></h1>
 <h1 onclick="toggleDevTools()" id="devToolsOpenBtn"><i class="fa-solid fa-code"></i></h1>
 <h1 onclick="toggleHistory()" id="historyOpenBtn"><i class="fa-solid fa-clock-rotate-left"></i></h1>
+<h1 onclick="newSidebarPage(document.querySelector('.activeWebview').getURL())"><i class="fa-regular fa-square-plus"></i></h1>
 </div>
 
 
@@ -78,6 +83,7 @@ newContainerEl.innerHTML=`
 <legend><p>Tabs and Sidebar:</p></legend>
 <button onclick="if (lastClosedTab !== 'unset'){ newTab(lastClosedTab); }">Restore last closed tab</button><br>
 <button onclick="document.getElementById('homeBtn').classList.toggle('hidden')">Toggle Home Button</button><br>
+<button onclick="showBottomTitle = !showBottomTitle">Toggle Title Previews</button><br>
 <hr>
 <button onclick="document.getElementById('historyOpenBtn').classList.toggle('hidden')">Toggle History Button</button><br>
 <button onclick="document.getElementById('readOpenBtn').classList.toggle('hidden')">Toggle Reading Mode Button</button><br>
@@ -94,7 +100,8 @@ newContainerEl.innerHTML=`
 </div>
 <button onclick="newTab('http://ioposts.farleyengineeredsolutions.com/auto/releases.html')">Releases</button>
 <button onclick="newTab('http://ioposts.farleyengineeredsolutions.com/auto/')">Website</button>
-
+<button onclick="notify(whatsnew, 3000, '400px')">Whats New</button>
+<br><br>
 </div>
 
 
@@ -162,6 +169,7 @@ function deselectTabs(){
 function newTab(url){
     deselectTabs();
     let newTabEl = document.createElement("div");
+    newTabEl.innerHTML="<span></span>";
     newTabEl.classList.add("tab");
     newTabEl.classList.add("active");
     tabbarEl.prepend(newTabEl);
@@ -220,6 +228,12 @@ function newTab(url){
     document.querySelector(".tab").click();
     });
 
+    newTabEl.addEventListener("mouseover", () => {
+        if (showBottomTitle){
+        notify(newWebview.getTitle(), 500, 30+"px", window.innerHeight - 30 + "px");
+        }
+    });
+
 
 
 }
@@ -228,7 +242,7 @@ function update(){
     if (document.querySelector('.activeWebview')){
 
 
-    document.querySelector(".active").innerText = document.querySelector(".activeWebview").getTitle();
+    document.querySelector(".active span").innerText = document.querySelector(".activeWebview").getTitle();
     document.title = `${document.querySelector(".activeWebview").getTitle()} - AutoBrowser`;
 
     if (document.activeElement !== addressBarEl && updateAddress){
@@ -236,7 +250,7 @@ function update(){
     }
 
 
-    document.querySelector(".active").innerHTML = document.querySelector(".active").innerText.split(" ").join("&nbsp;");
+    document.querySelector(".active span").innerHTML = document.querySelector(".active").innerText.split(" ").join("&nbsp;");
     
 
     if (document.querySelector('.activeWebview').canGoBack()){
@@ -249,6 +263,13 @@ function update(){
     } else {
         document.getElementById("goForward").style.display="none";
     }
+
+    if (document.querySelector(".activeWebview").isLoading()){
+        document.body.style.borderTop="4px solid var(--theme)";
+    } else {
+        document.body.style.borderTop="none";
+    }
+
     }
     document.getElementById("historyText").innerHTML = history;
     document.getElementById("extraTabMargin").style.width = `${20 - document.querySelectorAll('.tab').length*2 - 2}%`;
@@ -263,8 +284,11 @@ setTimeout(() => {
 
 addressBarEl.addEventListener("keydown", (event) => {
 if (event.key.toLowerCase() == "enter"){
-    if (addressBarEl.value.includes(" ") || !addressBarEl.value.split(".")[1] || addressBarEl.value.split(".")[1] == ''){
+    if (!addressBarEl.value.startsWith("file:") && addressBarEl.value.includes(" ") || !addressBarEl.value.split(".")[1] || addressBarEl.value.split(".")[1] == ''){
     document.querySelector(".activeWebview").loadURL(searchURL+addressBarEl.value);
+    document.querySelector(".activeWebview").focus();
+    } else if (addressBarEl.value.startsWith("file:")){
+    document.querySelector(".activeWebview").loadURL(addressBarEl.value);
     document.querySelector(".activeWebview").focus();
     } else if (!addressBarEl.value.startsWith("http")){
     document.querySelector(".activeWebview").loadURL("http://"+addressBarEl.value);
@@ -279,15 +303,26 @@ if (event.key.toLowerCase() == "enter"){
 }
 });
 
+function clearSidebars(element) {
+  for (let i = 0; i < document.querySelectorAll(".sidebarApp").length; i++) {
+    if (element !== document.querySelectorAll(".sidebarApp")[i]){
+    document.querySelectorAll(".sidebarApp")[i].classList.add("hidden");
+    }
+  }
+}
+
 
 function toggleSettings(){
+    clearSidebars(document.querySelector("#settings"));
     document.querySelector("#settings").classList.toggle("hidden");
 }
 
 function toggleDevTools(){
+    clearSidebars(document.querySelector("#devTools"));
     document.querySelector("#devTools").classList.toggle("hidden");
 }
 function toggleHistory(){
+    clearSidebars(document.querySelector("#history"));
     document.querySelector("#history").classList.toggle("hidden");
 }
 function newSidebarPage(url){
@@ -306,6 +341,7 @@ function newSidebarPage(url){
     <button onclick="newTab(this.parentElement.querySelector('webview').getURL()); this.parentElement.classList.add('hidden')" style="width:5%;"><i class="fa-solid fa-file-export"></i></button>
     <webview src="${url}" style="height:calc(100% - 15px); width:100%; display:flex;"></webview>`;
     newSidebarPageEl.addEventListener("click", () => {
+        clearSidebars(newWebviewEl);
         newWebviewEl.classList.toggle("hidden");
     });
     newWebviewEl.querySelector("webview").addEventListener("page-favicon-updated", (event) => {
@@ -356,18 +392,25 @@ function readingMode(){
     }).catch(err => console.error(err));
 }
 
-function notify(content, end){
+function notify(content, end, height, margintop){
     let newPopup = document.createElement("div");
     newPopup.style.position="fixed";
     newPopup.style.width="100%";
+    if (!height){ 
     newPopup.style.height="50px";
+    } else {
+    newPopup.style.height=height;
+    }
+    if (margintop){
+    newPopup.style.marginTop=margintop;
+    }
     newPopup.style.backgroundColor="black";
     newPopup.style.color="white";
     newPopup.style.display="flex";
     newPopup.style.alignItems="center";
     newPopup.style.justifyContent="center";
     newPopup.style.zIndex="10000000000000000000000";
-    newPopup.innerHTML=content;
+    newPopup.innerHTML=`<pre style="font-family:'Saira', system-ui, -apple-system, sans-serif;">${content}</pre>`;
     document.body.prepend(newPopup);
     setTimeout(() => {
         newPopup.outerHTML='';
