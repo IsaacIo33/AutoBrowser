@@ -1,22 +1,21 @@
 let homepage = "https://isaacio33.github.io/auto-start-page";
 let searchURL = "https://google.com/search?udm=14&q=";
 let tabbarEl = document.getElementById("tabbar");
-let version = "1.0.0.6";
+let version = "1.0.0.7";
 let updateAddress = true;
 let lastClosedTab = "unset";
-let history = "";
+let browsingHistory = "";
 let incognito = false;
 let showBottomTitle = false;
 let whatsnew = `
 
- -- Removed the Mini Side Browser section from Settings. (IsaacIo33)
- -- Fixed 2 speed issues in AutoBrowser. (IsaacIo33)
- -- Made the Sidebar smaller to give the webview more room. (IsaacIo33)
- -- Made Tab Title previews disabled by default. (IsaacIo33)
- -- Made Tabs slightly bigger. (IsaacIo33)
- -- Moved the link that appears when the current webview is loading to the tab that the webview is on. (IsaacIo33)
- -- Added a Credits button to Settings. (IsaacIo33)
- -- Changed the default Home page from https://google.com/ to https://isaacio33.github.io/auto-start-page. (IsaacIo33)
+ -- Now your data saves across different sessions. (IsaacIo33)
+ -- Added a Reset ALL Saved data button in Settings. (IsaacIo33)
+ -- Fixed 2 bugs. (IsaacIo33)
+ -- Fixed 2 bugs that formed during Development. (IsaacIo33)
+ -- Made the Print button on the Sidebar hidden by Default. (IsaacIo33)
+ -- Added a Print current page button to Settings. (IsaacIo33)
+ -- Fixed a display Issue where buttons on Mini Sidebar Browsers would go on the next line on Small Screens. (IsaacIo33)
 
  `;
 
@@ -43,7 +42,7 @@ newContainerEl.innerHTML=`
 <h1 onclick="document.querySelector('.activeWebview').goBack()" id="goBack"><i class="fa-solid fa-angle-left"></i></h1>
 <h1 onclick="document.querySelector('.activeWebview').goForward()" id="goForward"><i class="fa-solid fa-angle-right"></i></h1>
 <h1 onclick="toggleSettings();"><i class="fa-solid fa-gear"></i></h1>
-<h1 onclick="document.querySelector('.activeWebview').print()" id="printOpenBtn"><i class="fa-solid fa-print"></i></h1>
+<h1 onclick="document.querySelector('.activeWebview').print()" id="printOpenBtn" class="hidden"><i class="fa-solid fa-print"></i></h1>
 <h1 onclick="readingMode()" id="readOpenBtn"><i class="fa-solid fa-book-open"></i></h1>
 <h1 onclick="toggleDevTools()" id="devToolsOpenBtn"><i class="fa-solid fa-code"></i></h1>
 <h1 onclick="toggleHistory()" id="historyOpenBtn"><i class="fa-solid fa-clock-rotate-left"></i></h1>
@@ -80,6 +79,8 @@ newContainerEl.innerHTML=`
 <option value="https://start.duckduckgo.com/?q=">DuckDuckGo</option>
 <option value="https://noai.duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=">DuckDuckGo No-AI</option>
 </select>
+<p>Data Reset</p>
+<button onclick="localStorage.removeItem('data'); window.location.reload()">Reset ALL Data to default</button>
 <p>Custom Search Engine: (Include https://)</p>
 <input onchange="searchURL = this.value" type="text" placeholder="Enter Search URL with query at end" style="width:80%;">
 <!--
@@ -98,6 +99,10 @@ newContainerEl.innerHTML=`
 <button onclick="document.getElementById('readOpenBtn').classList.toggle('hidden')">Toggle Reading Mode Button</button><br>
 <button onclick="document.getElementById('printOpenBtn').classList.toggle('hidden')">Toggle Print Button</button><br>
 <button onclick="document.getElementById('devToolsOpenBtn').classList.toggle('hidden')">Toggle Developer Tools Button</button><br>
+<hr>
+
+<button onclick="document.querySelector('.activeWebview').print()">Print current Page</button><br>
+
 </fieldset>
 <p>Website Customize Settings:</p>
 <button onclick="document.querySelector('.activeWebview').setUserAgent('Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.74 Mobile Safari/537.36'); document.querySelector('.activeWebview').reload()">Mobile Mode</button>
@@ -141,7 +146,7 @@ newContainerEl.innerHTML=`
 <div class="sidebarApp hidden" id="history">
 <h1>History</h1>
 <input type="checkbox" onchange="incognito = this.checked; notify('Incognito Status updated: '+incognito, 500)"><span>Incognito</span><br>
-<button onclick="history = ''">Clear History</button>
+<button onclick="browsingHistory = ''">Clear History</button>
 <p id="historyText"></p>
 </div>
 
@@ -153,9 +158,29 @@ newContainerEl.id = "root_container";
 newContainerEl.style.height="100vh";
 document.body.appendChild(newContainerEl);
 newSidebarPage("https://wikipedia.org/");
+
+
+if (!localStorage.getItem("data")){
+    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
+} else {
+    let cookie = localStorage.getItem("data");
+    let sCookie = cookie.split("%%%");
+    document.documentElement.style.setProperty('--theme', sCookie[0]);
+    homepage = sCookie[1];
+    searchURL = sCookie[2];
+    lastClosedTab = sCookie[3];
+    browsingHistory = sCookie[4];
+    incognito = eval(sCookie[5]);
+    document.querySelector("select").value = sCookie[2];
+}
+
+document.querySelector("input[type=checkbox]").checked = incognito;
+
 }
 
 startup();
+
+
 
 tabbarEl = document.getElementById("tabbar");
 
@@ -211,7 +236,7 @@ function newTab(url){
     newWebview.addEventListener("will-navigate", (event) => {
         let url = event.url;
           if (!incognito){
-             history += "<br><br><p>"+url+"</p>";
+             browsingHistory += "<br><br><p>"+url+"</p>";
         }
     });
 
@@ -279,8 +304,33 @@ function update(){
     }
 
     }
-    document.getElementById("historyText").innerHTML = history;
+    document.getElementById("historyText").innerHTML = browsingHistory;
     document.getElementById("extraTabMargin").style.width = `${20 - document.querySelectorAll('.tab').length*2 - 2}%`;
+
+    // localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
+    
+
+    let cookie = localStorage.getItem("data");
+    let sCookie = cookie.split("%%%");
+    if (window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim() !== sCookie[0]){
+    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
+    } else if (homepage !== sCookie[1]){
+    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
+    } else if (searchURL !== sCookie[2]){
+    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
+    } else if (lastClosedTab !== sCookie[3]){
+    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
+    } else if (browsingHistory !== sCookie[4]){
+    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
+    } else if (incognito !== sCookie[5]){
+    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
+    }
+    
+    
+    
+    
+    
+
 }
 
 setInterval(update, 200);
@@ -306,7 +356,7 @@ if (event.key.toLowerCase() == "enter"){
     document.querySelector(".activeWebview").focus();
     }
     if (!incognito){
-        history += "<br><br><p>"+addressBarEl.value+"</p>";
+        browsingHistory += "<br><br><p>"+addressBarEl.value+"</p>";
     }
 }
 });
@@ -345,7 +395,7 @@ function newSidebarPage(url){
     <button onclick="this.parentElement.querySelector('webview').reload()" style="width:5%;"><i class="fa-solid fa-rotate-right"></i></button>
     <button onclick="this.parentElement.querySelector('webview').goBack()" style="width:5%;"><i class="fa-solid fa-chevron-left"></i></button>
     <button onclick="this.parentElement.querySelector('webview').goForward()" style="width:5%;"><i class="fa-solid fa-chevron-right"></i></button>
-    <input placeholder="Enter URL..." style="width:75%; height:15px;">
+    <input placeholder="Enter URL..." style="width:70%; height:15px;">
     <button onclick="newTab(this.parentElement.querySelector('webview').getURL()); this.parentElement.classList.add('hidden')" style="width:5%;"><i class="fa-solid fa-file-export"></i></button>
     <webview src="${url}" style="height:calc(100% - 15px); width:100%; display:flex;"></webview>`;
     newSidebarPageEl.addEventListener("click", () => {
@@ -438,9 +488,10 @@ let newScript = document.createElement("script");
 newScript.textContent = `window.electronAPI.onOpenNewTab((url) => {
   console.log(url);
   if (!incognito){
-  history += "<br><br><p>"+url+"</p>";
+  browsingHistory += "<br><br><p>"+url+"</p>";
   }
   newTab(url);
 });
 `;
 document.body.appendChild(newScript);
+
