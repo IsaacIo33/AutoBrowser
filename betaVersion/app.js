@@ -8,7 +8,13 @@ let browsingHistory = "";
 let incognito = false;
 let showBottomTitle = false;
 let whatsnew = `
-
+ <!--  -- Your "Theme Color" is saved.
+   -- Your "Home Page" is saved.
+   -- Your "Default Search Engine" is saved.
+   -- Your "Last Closed tab" is saved.
+   -- Your "Incognito status" is saved.
+   -- Your "Default Search Engine" is saved.
+   -- Your "Tab Title Preview status" is saved. -->
  -- Now your data saves across different sessions. (IsaacIo33)
  -- Added a Reset ALL Saved data button in Settings. (IsaacIo33)
  -- Fixed 2 bugs. (IsaacIo33)
@@ -16,6 +22,8 @@ let whatsnew = `
  -- Made the Print button on the Sidebar hidden by Default. (IsaacIo33)
  -- Added a Print current page button to Settings. (IsaacIo33)
  -- Fixed a display Issue where buttons on Mini Sidebar Browsers would go on the next line on Small Screens. (IsaacIo33)
+ -- Fixed a bug where Favicons inside Tabs were bigger then they should be in width. (IsaacIo33)
+
 
  `;
 
@@ -161,7 +169,7 @@ newSidebarPage("https://wikipedia.org/");
 
 
 if (!localStorage.getItem("data")){
-    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
+    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}%%%${showBottomTitle}`);
 } else {
     let cookie = localStorage.getItem("data");
     let sCookie = cookie.split("%%%");
@@ -171,6 +179,7 @@ if (!localStorage.getItem("data")){
     lastClosedTab = sCookie[3];
     browsingHistory = sCookie[4];
     incognito = eval(sCookie[5]);
+    showBottomTitle = eval(sCookie[6]);
     document.querySelector("select").value = sCookie[2];
 }
 
@@ -313,17 +322,19 @@ function update(){
     let cookie = localStorage.getItem("data");
     let sCookie = cookie.split("%%%");
     if (window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim() !== sCookie[0]){
-    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
+    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}%%%${showBottomTitle}`);
     } else if (homepage !== sCookie[1]){
-    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
+    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}%%%${showBottomTitle}`);
     } else if (searchURL !== sCookie[2]){
-    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
+    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}%%%${showBottomTitle}`);
     } else if (lastClosedTab !== sCookie[3]){
-    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
+    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}%%%${showBottomTitle}`);
     } else if (browsingHistory !== sCookie[4]){
-    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
+    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}%%%${showBottomTitle}`);
     } else if (incognito !== sCookie[5]){
-    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
+    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}%%%${showBottomTitle}`);
+    } else if (showBottomTitle !== sCookie[6]){
+    localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}%%%${showBottomTitle}`);
     }
     
     
