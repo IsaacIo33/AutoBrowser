@@ -91,10 +91,12 @@ body {
 
 #sidebar {
    position: fixed;
-   height: calc(100% - 50px);
-   margin-top: 50px;
+   height: calc(100% - 45px);
+   margin-top: 45px;
    width: var(--sidebarWidth);
     background-image: linear-gradient(80deg, rgba(255, 254, 254, 0.193), rgba(255, 254, 254, 0.624));
+    backdrop-filter: blur(35px);
+    transition: 0.2s;
 }
 
 #sidebar h1 {
@@ -158,4 +160,5 @@ body {
 
 webview {
     background-color: white;
+    transition: 0.2s;
 }
