@@ -1,30 +1,30 @@
 let homepage = "https://isaacio33.github.io/auto-start-page";
 let searchURL = "https://google.com/search?udm=14&q=";
 let tabbarEl = document.getElementById("tabbar");
-let version = "1.0.0.7";
+let version = "1.0.0.8";
 let updateAddress = true;
 let lastClosedTab = "unset";
 let browsingHistory = "";
 let incognito = false;
 let showBottomTitle = false;
 let whatsnew = `
- <!--  -- Your "Theme Color" is saved.
-   -- Your "Home Page" is saved.
-   -- Your "Default Search Engine" is saved.
-   -- Your "Last Closed tab" is saved.
-   -- Your "Incognito status" is saved.
-   -- Your "Default Search Engine" is saved.
-   -- Your "Tab Title Preview status" is saved. -->
- -- Now your data saves across different sessions. (IsaacIo33)
- -- Added a Reset ALL Saved data button in Settings. (IsaacIo33)
- -- Fixed 2 bugs. (IsaacIo33)
- -- Fixed 2 bugs that formed during Development. (IsaacIo33)
- -- Made the Print button on the Sidebar hidden by Default. (IsaacIo33)
- -- Added a Print current page button to Settings. (IsaacIo33)
- -- Fixed a display Issue where buttons on Mini Sidebar Browsers would go on the next line on Small Screens. (IsaacIo33)
- -- Fixed a bug where Favicons inside Tabs were bigger then they should be in width. (IsaacIo33)
 
-
+ -- Now when you set a Custom Search Engine and restart AutoBrowser the Custom Search Engine input is set to the Search URL. (IsaacIo33)
+ -- Changed the color of Sidebar Pages and Sidebar Mini Browsers. (IsaacIo33)
+ -- Now Sidebar Pages and Sidebar Mini Browsers background color are set to be similar to your theme color. (IsaacIo33)
+ -- Now Sidebar Mini Browsers save between sessions. (IsaacIo33)
+ -- Redesigned Buttons in Sidebar Pages and Sidebar Mini Browsers. (IsaacIo33)
+ -- Added the "Reset Most Data to default" Button to Settings. (IsaacIo33)
+ -- Added the "Reset Mini Sidebar Browser Data to default" Button to Settings. (IsaacIo33)
+ -- Added the "Reset Tab Data to default" Button to Settings. (IsaacIo33)
+ -- Redesigned the Color picker for choosing a Theme Color. (IsaacIo33)
+ -- Added a Close button to tabs. (Before you had to right click a tab to close it.) (IsaacIo33)
+ -- Made it so you can middle click tabs to close them. (IsaacIo33)
+ -- Made Tabs have a little less border radius. (IsaacIo33)
+ -- Slightly moved Tabs and the Address bar in the Tab Bar. (IsaacIo33)
+ -- Made the New tab button slightly smaller. (IsaacIo33)
+ -- Made it so Tabs save between sessions. (IsaacIo33)
+ -- Fixed a Speed Issue. (IsaacIo33)
  `;
 
 let credits = `
@@ -72,6 +72,11 @@ newContainerEl.innerHTML=`
 <div class="selectOption" style="background-color:pink;" onclick="document.documentElement.style.setProperty('--theme', 'pink');"></div>
 <div class="selectOption" style="background-color:cyan;" onclick="document.documentElement.style.setProperty('--theme', 'cyan');"></div>
 <div class="selectOption" style="background-color:teal;" onclick="document.documentElement.style.setProperty('--theme', 'teal');"></div>
+<div class="selectOption" style="background-color:lightblue;" onclick="document.documentElement.style.setProperty('--theme', 'lightblue');"></div>
+<div class="selectOption" style="background-color:#33FF7A;" onclick="document.documentElement.style.setProperty('--theme', '#33FF7A');"></div>
+<div class="selectOption" style="background-color:#FCF092;" onclick="document.documentElement.style.setProperty('--theme', '#FCF092');"></div>
+<div class="selectOption" style="background-color:#FFA18F;" onclick="document.documentElement.style.setProperty('--theme', '#FFA18F');"></div>
+<div class="selectOption" style="background-color:#8D1FCC;" onclick="document.documentElement.style.setProperty('--theme', '#8D1FCC');"></div>
 </div>
 <br>
 <span>Custom Color: </span><input onchange="document.documentElement.style.setProperty('--theme', this.value);" type="color">
@@ -88,9 +93,12 @@ newContainerEl.innerHTML=`
 <option value="https://noai.duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=">DuckDuckGo No-AI</option>
 </select>
 <p>Data Reset</p>
-<button onclick="localStorage.removeItem('data'); window.location.reload()">Reset ALL Data to default</button>
+<button onclick="localStorage.removeItem('data'); localStorage.removeItem('sidebarPages'); localStorage.removeItem('tabs'); window.location.reload()">Reset ALL Data to default</button><br>
+<button onclick="localStorage.removeItem('data'); window.location.reload()">Reset Most Data to default</button><br>
+<button onclick="localStorage.removeItem('sidebarPages'); window.location.reload()">Reset Mini Sidebar Browser Data to default</button><br>
+<button onclick="localStorage.removeItem('tabs'); window.location.reload()">Reset Tab Data to default</button>
 <p>Custom Search Engine: (Include https://)</p>
-<input onchange="searchURL = this.value" type="text" placeholder="Enter Search URL with query at end" style="width:80%;">
+<input onchange="searchURL = this.value" type="text" placeholder="Enter Search URL with query at end" style="width:80%;" id="customSearchEngineInput">
 <!--
 <p>Mini Sidebar Browser (formerly Sidebar Pages): (Include https://)</p>
 <input onchange="newSidebarPage(this.value)" placeholder="Enter URL"><br><br>
@@ -160,12 +168,18 @@ newContainerEl.innerHTML=`
 
 
 
-<div id="tabbar"><div class="tab" style="font-size:1.4rem; width:55px;" onclick="newTab(homepage)"><p>+</p></div><div style="width:20%;" id="extraTabMargin"></div><input class="tab" id="bar" placeholder="Search the Web or Enter URL"></div>
+<div id="tabbar">
+<div class="tab" style="font-size:1.4rem; width:40px; height:35px; margin-top:15px;" onclick="newTab(homepage)"><p>+</p></div>
+<div style="width:24%;" id="extraTabMargin"></div>
+<input class="tab" id="bar" placeholder="Search the Web or Enter URL">
+</div>
 `;
 newContainerEl.id = "root_container";
 newContainerEl.style.height="100vh";
 document.body.appendChild(newContainerEl);
-newSidebarPage("https://wikipedia.org/");
+// newSidebarPage("https://wikipedia.org/");
+
+
 
 
 if (!localStorage.getItem("data")){
@@ -181,9 +195,35 @@ if (!localStorage.getItem("data")){
     incognito = eval(sCookie[5]);
     showBottomTitle = eval(sCookie[6]);
     document.querySelector("select").value = sCookie[2];
+    if (document.querySelector("select").value == ''){
+    document.querySelector("#customSearchEngineInput").value = sCookie[2];
+    }
 }
 
 document.querySelector("input[type=checkbox]").checked = incognito;
+
+if (!localStorage.getItem("sidebarPages")){
+    localStorage.setItem("sidebarPages", "");
+} else {
+    let urls = localStorage.getItem("sidebarPages").split("%%%");
+    for (let i = 0; i < urls.length; i++) {
+        let element = urls[i];
+        newSidebarPage(element);
+    }
+}
+
+if (!localStorage.getItem("tabs")){
+    localStorage.setItem("tabs", "");
+} else {
+    let urls = localStorage.getItem("tabs").split("%%%");
+    for (let i = 0; i < urls.length; i++) {
+        let element = urls[i];
+        setTimeout(() => {
+        newTab(element);
+        }, 500);
+    }
+
+}
 
 }
 
@@ -213,7 +253,7 @@ function deselectTabs(){
 function newTab(url){
     deselectTabs();
     let newTabEl = document.createElement("div");
-    newTabEl.innerHTML="<span></span>";
+    newTabEl.innerHTML=`<span>New Tab</span>`;
     newTabEl.classList.add("tab");
     newTabEl.classList.add("active");
     tabbarEl.prepend(newTabEl);
@@ -230,6 +270,9 @@ function newTab(url){
     newWebview.style.display='flex';
     newTabEl.classList.add("active");
     });
+    let newCloseBtn = document.createElement("button");
+    newCloseBtn.innerHTML='<i class="fa-solid fa-xmark"></i>';
+    newTabEl.appendChild(newCloseBtn);
 
     newWebview.addEventListener("update-target-url", (event) => {
         if (event.url){
@@ -253,6 +296,10 @@ function newTab(url){
         newTabEl.style.backgroundImage=`url(${event.favicons[0]})`;
     });
 
+    newWebview.addEventListener("page-title-updated", (event) => {
+        newTabEl.querySelector("span").innerHTML=event.title.replaceAll(" ", "&nbsp;");
+    });
+
     newWebview.addEventListener("dom-ready", () => {
         newWebview.executeJavaScript(`
         document.addEventListener("click", (event) => {
@@ -264,7 +311,7 @@ function newTab(url){
             `);
     });
 
-    newTabEl.addEventListener("contextmenu", () => {
+    newCloseBtn.addEventListener("mousedown", () => {
         deselectTabs();
         lastClosedTab = newWebview.getURL();
     newWebview.outerHTML="";
@@ -278,6 +325,16 @@ function newTab(url){
         }
     });
 
+    newTabEl.addEventListener("auxclick", (event) => {
+        if (event.button === 1){
+          deselectTabs();
+        lastClosedTab = newWebview.getURL();
+    newWebview.outerHTML="";
+    newTabEl.outerHTML="";
+    document.querySelector(".tab").click();
+        }
+    });
+
 
 
 }
@@ -286,8 +343,8 @@ function update(){
     if (document.querySelector('.activeWebview')){
 
 
-    document.querySelector(".active span").innerHTML = document.querySelector(".activeWebview").getTitle().replaceAll(" ", "&nbsp;");
-    document.title = `${document.querySelector(".activeWebview").getTitle()} - AutoBrowser`;
+    // document.querySelector(".active span").innerHTML = document.querySelector(".activeWebview").getTitle().replaceAll(" ", "&nbsp;");
+    // document.title = `${document.querySelector(".activeWebview").getTitle()} - AutoBrowser`;
 
     if (document.activeElement !== addressBarEl && updateAddress){
     addressBarEl.value = document.querySelector(".activeWebview").getURL();
@@ -314,7 +371,7 @@ function update(){
 
     }
     document.getElementById("historyText").innerHTML = browsingHistory;
-    document.getElementById("extraTabMargin").style.width = `${20 - document.querySelectorAll('.tab').length*2 - 2}%`;
+    document.getElementById("extraTabMargin").style.width = `${24 - document.querySelectorAll('.tab').length*2 - 2}%`;
 
     // localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
     
@@ -336,18 +393,51 @@ function update(){
     } else if (showBottomTitle !== sCookie[6]){
     localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}%%%${showBottomTitle}`);
     }
-    
-    
-    
-    
-    
+
+        
+   if (localStorage.getItem("sidebarPages") || localStorage.getItem("sidebarPages") == ""){
+    let urls = [];
+
+    let allSidebarWebviews = document.querySelectorAll(".miniSidebarBrowserWebviewContainer");
+
+    for (let i = 0; i < allSidebarWebviews.length; i++) {
+        let element = allSidebarWebviews[i].querySelector("webview");
+        urls.push(element.getURL());
+    }
+
+
+    if (localStorage.getItem("sidebarPages") !== urls.join("%%%")){
+    localStorage.setItem("sidebarPages", urls.join("%%%"));
+    }
+
+   }
+
+   if (localStorage.getItem("tabs") || localStorage.getItem("tabs") == ""){
+    let urls = [];
+
+    let allWebviews = document.querySelectorAll(".webview");
+
+    for (let i = 0; i < allWebviews.length; i++) {
+        let element = allWebviews[i];
+        urls.push(element.getURL());
+    }
+
+
+    if (localStorage.getItem("tabs") !== urls.join("%%%")){
+    localStorage.setItem("tabs", urls.join("%%%"));
+    }
+
+   }
+
 
 }
 
 setInterval(update, 200);
 
 setTimeout(() => {
+    if (!localStorage.getItem("tabs")){
     newTab(homepage);
+    }
 }, 100);
 
 
@@ -400,6 +490,7 @@ function newSidebarPage(url){
     newSidebarPageEl.innerHTML=url.toUpperCase().split('/')[2].split('')[0];
     let newWebviewEl = document.createElement("div");
     newWebviewEl.classList.add("sidebarApp");
+    newWebviewEl.classList.add("miniSidebarBrowserWebviewContainer");
     newWebviewEl.classList.add("hidden");
     newWebviewEl.style.overflow="hidden";
     newWebviewEl.innerHTML=`
