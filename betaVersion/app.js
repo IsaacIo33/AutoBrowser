@@ -25,6 +25,8 @@ let whatsnew = `
  -- Made the New tab button slightly smaller. (IsaacIo33)
  -- Made it so Tabs save between sessions. (IsaacIo33)
  -- Fixed a Speed Issue. (IsaacIo33)
+ -- Made the Whats new popup bigger. (IsaacIo33)
+ -- Added a Sidebar Toggle button. (IsaacIo33)
  `;
 
 let credits = `
@@ -59,8 +61,11 @@ newContainerEl.innerHTML=`
 
 
 <div class="sidebarApp hidden" id="settings">
+
 <h1>Settings</h1>
+
 <p>Theme Color:</p>
+
 <div style="display:flex; align-items:center; justify-content:space-around;">
 <div class="selectOption" style="background-color:lightgray;" onclick="document.documentElement.style.setProperty('--theme', 'lightgray');"></div>
 <div class="selectOption" style="background-color:gold;" onclick="document.documentElement.style.setProperty('--theme', 'gold');"></div>
@@ -80,8 +85,10 @@ newContainerEl.innerHTML=`
 </div>
 <br>
 <span>Custom Color: </span><input onchange="document.documentElement.style.setProperty('--theme', this.value);" type="color">
+
 <p>Homepage: (Include https://)</p>
 <input onchange="homepage = this.value" type="text" value="${homepage}">
+
 <p>Search Engine:</p>
 <select onchange="searchURL = this.value">
 <option value="https://google.com/search?udm=14&q=">Google No-AI</option>
@@ -92,6 +99,7 @@ newContainerEl.innerHTML=`
 <option value="https://start.duckduckgo.com/?q=">DuckDuckGo</option>
 <option value="https://noai.duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=">DuckDuckGo No-AI</option>
 </select>
+
 <p>Data Reset</p>
 <button onclick="localStorage.removeItem('data'); localStorage.removeItem('sidebarPages'); localStorage.removeItem('tabs'); window.location.reload()">Reset ALL Data to default</button><br>
 <button onclick="localStorage.removeItem('data'); window.location.reload()">Reset Most Data to default</button><br>
@@ -99,12 +107,15 @@ newContainerEl.innerHTML=`
 <button onclick="localStorage.removeItem('tabs'); window.location.reload()">Reset Tab Data to default</button>
 <p>Custom Search Engine: (Include https://)</p>
 <input onchange="searchURL = this.value" type="text" placeholder="Enter Search URL with query at end" style="width:80%;" id="customSearchEngineInput">
+
 <!--
 <p>Mini Sidebar Browser (formerly Sidebar Pages): (Include https://)</p>
 <input onchange="newSidebarPage(this.value)" placeholder="Enter URL"><br><br>
 <button onclick="newSidebarPage(document.querySelector('.activeWebview').getURL())">Add current Website</button>
 -->
+
 <br>
+
 <fieldset>
 <legend><p>Tabs and Sidebar:</p></legend>
 <button onclick="if (lastClosedTab !== 'unset'){ newTab(lastClosedTab); }">Restore last closed tab</button><br>
@@ -116,13 +127,15 @@ newContainerEl.innerHTML=`
 <button onclick="document.getElementById('printOpenBtn').classList.toggle('hidden')">Toggle Print Button</button><br>
 <button onclick="document.getElementById('devToolsOpenBtn').classList.toggle('hidden')">Toggle Developer Tools Button</button><br>
 <hr>
-
 <button onclick="document.querySelector('.activeWebview').print()">Print current Page</button><br>
 
 </fieldset>
+
 <p>Website Customize Settings:</p>
+
 <button onclick="document.querySelector('.activeWebview').setUserAgent('Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.74 Mobile Safari/537.36'); document.querySelector('.activeWebview').reload()">Mobile Mode</button>
 <button onclick="document.querySelector('.activeWebview').executeJavaScript('document.body.style.filter=\`grayscale(1)\`;')">Grayscale</button>
+
 <p>About:</p>
 <div style="display:flex; align-items:center: text-align:center; justify-content:space-around;">
 <img src="images/icon.png" alt="A" height="50">
@@ -130,9 +143,11 @@ newContainerEl.innerHTML=`
 </div>
 <button onclick="newTab('http://ioposts.farleyengineeredsolutions.com/auto/releases.html')">Releases</button>
 <button onclick="newTab('http://ioposts.farleyengineeredsolutions.com/auto/')">Website</button>
-<button onclick="notify(whatsnew, 3000, '400px')">Whats New</button>
+<button onclick="notify(whatsnew, 3000, '700px')">Whats New</button>
 <button onclick="notify(credits, 5000, '400px')">Credits</button>
+
 <br><br>
+
 </div>
 
 
@@ -167,11 +182,13 @@ newContainerEl.innerHTML=`
 </div>
 
 
-
+<div style="display:flex; align-items:center; justify-content:center;">
+<img src="https://ioposts.farleyengineeredsolutions.com/drive/files/ioTest/menuBtn.png" alt="Menu" height="50" width="40" draggable="false" onclick="document.querySelector('#sidebar').classList.toggle('sidebarHidden'); if (document.querySelector('#sidebar').classList.contains('sidebarHidden')){ document.documentElement.style.setProperty('--sidebarWidth', '0px'); } else { document.documentElement.style.setProperty('--sidebarWidth', '40px'); }">
 <div id="tabbar">
 <div class="tab" style="font-size:1.4rem; width:40px; height:35px; margin-top:15px;" onclick="newTab(homepage)"><p>+</p></div>
 <div style="width:24%;" id="extraTabMargin"></div>
 <input class="tab" id="bar" placeholder="Search the Web or Enter URL">
+</div>
 </div>
 `;
 newContainerEl.id = "root_container";
