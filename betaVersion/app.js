@@ -1,7 +1,7 @@
 let homepage = "https://isaacio33.github.io/auto-start-page";
 let searchURL = "https://google.com/search?udm=14&q=";
 let tabbarEl = document.getElementById("tabbar");
-let version = "1.0.0.8";
+let version = "1.0.0.9";
 let updateAddress = true;
 let lastClosedTab = "unset";
 let browsingHistory = "";
@@ -9,24 +9,17 @@ let incognito = false;
 let showBottomTitle = false;
 let whatsnew = `
 
- -- Now when you set a Custom Search Engine and restart AutoBrowser the Custom Search Engine input is set to the Search URL. (IsaacIo33)
- -- Changed the color of Sidebar Pages and Sidebar Mini Browsers. (IsaacIo33)
- -- Now Sidebar Pages and Sidebar Mini Browsers background color are set to be similar to your theme color. (IsaacIo33)
- -- Now Sidebar Mini Browsers save between sessions. (IsaacIo33)
- -- Redesigned Buttons in Sidebar Pages and Sidebar Mini Browsers. (IsaacIo33)
- -- Added the "Reset Most Data to default" Button to Settings. (IsaacIo33)
- -- Added the "Reset Mini Sidebar Browser Data to default" Button to Settings. (IsaacIo33)
- -- Added the "Reset Tab Data to default" Button to Settings. (IsaacIo33)
- -- Redesigned the Color picker for choosing a Theme Color. (IsaacIo33)
- -- Added a Close button to tabs. (Before you had to right click a tab to close it.) (IsaacIo33)
- -- Made it so you can middle click tabs to close them. (IsaacIo33)
- -- Made Tabs have a little less border radius. (IsaacIo33)
- -- Slightly moved Tabs and the Address bar in the Tab Bar. (IsaacIo33)
- -- Made the New tab button slightly smaller. (IsaacIo33)
- -- Made it so Tabs save between sessions. (IsaacIo33)
- -- Fixed a Speed Issue. (IsaacIo33)
- -- Made the Whats new popup bigger. (IsaacIo33)
- -- Added a Sidebar Toggle button. (IsaacIo33)
+ -- Added some margin around buttons, inputs and dropdowns in Sidebar Pages and Sidebar Mini Browsers. (IsaacIo33)
+ -- Now you can set a Tab to be "protected". (IsaacIo33)
+ -- Added a "Close all Tabs" button to Settings. (IsaacIo33)
+ -- Made the sidebar have no traces of yellow from the toggle button by default. (IsaacIo33)
+ -- Removed Border Radius from Tabs. (IsaacIo33)
+ -- Made the sidebar 1 pixel taller. (IsaacIo33)
+ -- Made the Toggle sidebar button have a new style. (IsaacIo33)
+ -- Now Instead of the loading tab getting a line on the top of the tab the reload button gets a loading animation. (IsaacIo33)
+ -- If on the default AutoBrowser home page the address bar value is set to nothing so you can search easier. (IsaacIo33)
+ -- Slightly changed the focus border color of Buttons, dropdowns and inputs in Sidebar Pages. (IsaacIo33)
+ -- Improved the layout of the Tab bar. (IsaacIo33)
  `;
 
 let credits = `
@@ -47,7 +40,7 @@ newContainerEl.innerHTML=`
 
 
 <div id="sidebar">
-<h1 onclick="document.querySelector('.activeWebview').reload()"><i class="fa-solid fa-rotate-right"></i></h1>
+<h1 onclick="document.querySelector('.activeWebview').reload()" id="reloadBtn"><i class="fa-solid fa-rotate-right"></i></h1>
 <h1 onclick="document.querySelector('.activeWebview').loadURL(homepage)" class="hidden" id="homeBtn"><i class="fa-regular fa-house"></i></h1>
 <h1 onclick="document.querySelector('.activeWebview').goBack()" id="goBack"><i class="fa-solid fa-angle-left"></i></h1>
 <h1 onclick="document.querySelector('.activeWebview').goForward()" id="goForward"><i class="fa-solid fa-angle-right"></i></h1>
@@ -128,6 +121,8 @@ newContainerEl.innerHTML=`
 <button onclick="document.getElementById('devToolsOpenBtn').classList.toggle('hidden')">Toggle Developer Tools Button</button><br>
 <hr>
 <button onclick="document.querySelector('.activeWebview').print()">Print current Page</button><br>
+<button onclick="document.querySelector('.active button').outerHTML=''">Change current Tab to be Protected</button><br>
+<button onclick="closeAllTabs()">Close all Tabs</button>
 
 </fieldset>
 
@@ -183,10 +178,12 @@ newContainerEl.innerHTML=`
 
 
 <div style="display:flex; align-items:center; justify-content:center;">
-<img src="https://ioposts.farleyengineeredsolutions.com/drive/files/ioTest/menuBtn.png" alt="Menu" height="50" width="40" draggable="false" onclick="document.querySelector('#sidebar').classList.toggle('sidebarHidden'); if (document.querySelector('#sidebar').classList.contains('sidebarHidden')){ document.documentElement.style.setProperty('--sidebarWidth', '0px'); } else { document.documentElement.style.setProperty('--sidebarWidth', '40px'); }">
+<img src="https://ioposts.farleyengineeredsolutions.com/drive/files/ioTest/2026_11_07_0qz_Kleki.png" style="background-color:rgba(255, 254, 254, 0.624);" alt="Menu" height="50" width="40" draggable="false" onclick="document.querySelector('#sidebar').classList.toggle('sidebarHidden'); if (document.querySelector('#sidebar').classList.contains('sidebarHidden')){ document.documentElement.style.setProperty('--sidebarWidth', '0px'); } else { document.documentElement.style.setProperty('--sidebarWidth', '40px'); }">
 <div id="tabbar">
+<div id="tabContainer">
 <div class="tab" style="font-size:1.4rem; width:40px; height:35px; margin-top:15px;" onclick="newTab(homepage)"><p>+</p></div>
-<div style="width:24%;" id="extraTabMargin"></div>
+</div>
+<!-- <div style="width:24%;" id="extraTabMargin"></div> -->
 <input class="tab" id="bar" placeholder="Search the Web or Enter URL">
 </div>
 </div>
@@ -273,7 +270,7 @@ function newTab(url){
     newTabEl.innerHTML=`<span>New Tab</span>`;
     newTabEl.classList.add("tab");
     newTabEl.classList.add("active");
-    tabbarEl.prepend(newTabEl);
+    document.getElementById("tabContainer").prepend(newTabEl);
     let newWebview = document.createElement("webview");
     newWebview.src = url;
     newWebview.setAttribute("allowpopups", "true");
@@ -364,7 +361,11 @@ function update(){
     // document.title = `${document.querySelector(".activeWebview").getTitle()} - AutoBrowser`;
 
     if (document.activeElement !== addressBarEl && updateAddress){
-    addressBarEl.value = document.querySelector(".activeWebview").getURL();
+        if (document.querySelector(".activeWebview").getURL() !== "https://isaacio33.github.io/auto-start-page/"){
+             addressBarEl.value = document.querySelector(".activeWebview").getURL();
+        }  else {
+            addressBarEl.value = "";
+        }
     }
 
     
@@ -380,15 +381,17 @@ function update(){
         document.getElementById("goForward").style.display="none";
     }
 
-    if (document.querySelector(".activeWebview").isLoading()){
-        document.querySelector(".active").style.borderTop="4px solid var(--theme)";
-    } else if (document.querySelector(".active").style.borderTop !== "none" ) {
-        document.querySelector(".active").style.borderTop="none";
+    if (document.querySelector(".activeWebview").isLoading()){ // <i class="fa-solid fa-rotate-right"></i>
+        document.querySelector("#reloadBtn").innerHTML=`<i class="fa-solid fa-hourglass fa-beat-fade"></i>`;
+        // document.querySelector(".active").style.borderTop="4px solid lightgray";
+    } else if (document.querySelector("#reloadBtn").innerHTML !== `<i class="fa-solid fa-rotate-right"></i>`) {
+        // document.querySelector(".active").style.borderTop="none";
+        document.querySelector("#reloadBtn").innerHTML=`<i class="fa-solid fa-rotate-right"></i>`;
     }
 
     }
     document.getElementById("historyText").innerHTML = browsingHistory;
-    document.getElementById("extraTabMargin").style.width = `${24 - document.querySelectorAll('.tab').length*2 - 2}%`;
+    // document.getElementById("tabContainer").style.width = `${50 + document.querySelectorAll('.tab').length * 6}%`;
 
     // localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
     
@@ -599,7 +602,20 @@ function notify(content, end, height, margintop){
 
 
 
-
+function closeAllTabs(){
+    let tabs = document.querySelectorAll('.tab');
+    for (let i = 0; i < tabs.length; i++) {
+        let element = tabs[i];
+        if (element !== document.querySelectorAll('.tab')[document.querySelectorAll('.tab').length - 1] && element !== document.querySelectorAll('.tab')[document.querySelectorAll('.tab').length - 2]){
+        element.outerHTML='';
+        }
+    }
+    let webviews = document.querySelectorAll('.webview');
+    for (let i = 0; i < webviews.length; i++) {
+        let element = webviews[i];
+        element.outerHTML='';
+    }
+}
 
 
 
