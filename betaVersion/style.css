@@ -27,10 +27,10 @@ body {
 
 .tab {
     height: 40px;
-    width: 12%;
+    width: 20%;
     background-color: rgba(255, 255, 255, 0);
-    border-top-left-radius: 2px;
-    border-top-right-radius: 2px;
+    /* border-top-left-radius: 2px; */
+    /* border-top-right-radius: 2px; */
     margin-top: 10px;
     display: flex;
     align-items: center;
@@ -91,12 +91,13 @@ body {
 
 #sidebar {
    position: fixed;
-   height: calc(100% - 45px);
-   margin-top: 45px;
+   height: calc(100% - 44px);
+   margin-top: 44px;
    width: var(--sidebarWidth);
     background-image: linear-gradient(80deg, rgba(255, 254, 254, 0.193), rgba(255, 254, 254, 0.624));
-    backdrop-filter: blur(35px);
+    /* backdrop-filter: blur(85px); */
     transition: 0.2s;
+    background-color: var(--theme);
 }
 
 #sidebar h1 {
@@ -140,10 +141,11 @@ body {
     /* border-top-right-radius: 5px; */
     background-image: linear-gradient(rgba(228, 226, 226, 0.62), rgba(220, 220, 220, 0.538));
     border-radius: 5px;
+    margin: 2px;
 }
 
 .sidebarApp input:focus, .sidebarApp select:focus, .sidebarApp button:focus {
-    border: 1px solid rgb(59, 78, 250);
+    border: 1px solid rgb(59, 116, 250);
     outline: none;
     padding: 5px;
     /* border-top-left-radius: 5px; */
@@ -161,4 +163,11 @@ body {
 webview {
     background-color: white;
     transition: 0.2s;
+}
+
+#tabContainer {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    width: 70%;
 }
