@@ -23,6 +23,7 @@ let whatsnew = `
  -- Orginazed Settings into Sections. (IsaacIo33)
  -- Cleaned up Code. (IsaacIo33)
  -- Redesigned Browsing history urls. (IsaacIo33)
+ -- Made Mini Sidebar Browser webviews have 2px less in height. (IsaacIo33)
  `;
 
 let credits = `
@@ -582,7 +583,7 @@ function newSidebarPage(url){
     <button onclick="this.parentElement.querySelector('webview').goForward()" style="width:5%;"><i class="fa-solid fa-chevron-right"></i></button>
     <input placeholder="Enter URL..." style="width:70%; height:15px;">
     <button onclick="newTab(this.parentElement.querySelector('webview').getURL()); this.parentElement.classList.add('hidden')" style="width:5%;"><i class="fa-solid fa-file-export"></i></button>
-    <webview src="${url}" style="height:calc(100% - 15px); width:100%; display:flex;" useragent="${useragent}"></webview>`;
+    <webview src="${url}" style="height:calc(100% - 17px); width:100%; display:flex;" useragent="${useragent}"></webview>`;
     newSidebarPageEl.addEventListener("click", () => {
         clearSidebars(newWebviewEl);
         newWebviewEl.classList.toggle("hidden");
