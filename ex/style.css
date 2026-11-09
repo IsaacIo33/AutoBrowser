@@ -40,7 +40,7 @@ body {
     overflow: hidden;
     text-align: left;
     box-shadow: 1px -1px 1px lightgray;
-    background-size: 12% 45%;
+    background-size: 11% 45%;
     background-repeat: no-repeat;
     background-position: 3% 50%;
 }
@@ -121,7 +121,7 @@ body {
     height: 100%;
     margin-left: var(--sidebarWidth);
     background-color: var(--theme);
-    background-image: linear-gradient(rgb(201, 201, 201, 0.66));
+    background-image: linear-gradient(rgb(201, 201, 201, 0.66), rgba(139, 139, 139, 0.66));
     width: 45%;
     z-index: 10;
     backdrop-filter: blur(2px);
@@ -170,4 +170,12 @@ webview {
     align-items: center;
     justify-content: left;
     width: 70%;
+}
+
+#historyText p {
+    background-color: white;
+    padding: 2px;
+    border-radius: 5px;
+    width: 80%;
+    margin-left: 10%;
 }
