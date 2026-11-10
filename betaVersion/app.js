@@ -1,29 +1,28 @@
 let homepage = "https://isaacio33.github.io/auto-start-page";
 let searchURL = "https://google.com/search?udm=14&q=";
-let version = "1.0.1.9";
+let version = "1.0.2.9";
 let updateAddress = true;
 let lastClosedTab = "unset";
 let browsingHistory = "";
 let incognito = false;
 let showBottomTitle = false;
+let updateHistory = true;
+let lastUpdatedHistory = "";
 let useragent = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.8127.18 AutoBrowser/${version} Safari/537.36`;
 let whatsnew = `
 
- -- Now Tabs that have no Titles are labeled with an ID. (IsaacIo33)
- -- Slightly resized favicons. (IsaacIo33)
- -- Made Sidebar Pages have a gradient background. (IsaacIo33)
+ -- You can now right click urls in the browsing history popup to move from the browsing history. (IsaacIo33)
  -- Fixed a Speed Issue. (IsaacIo33)
- -- Now when you toggle reading mode the page doesn't reload. (IsaacIo33)
- -- Now some code is grouped into some other code instead of being seperate. (IsaacIo33)
- -- Now when a Mini Sidebar Browser has no favicon it's favicon becomes a globe. (IsaacIo33)
- -- Updated User Agent to Chrome/158.0.8127.18 for Webviews. (IsaacIo33)
- -- Added a new User Agent feature to Developer Tools. (IsaacIo33)
- -- Updated the User Agent for Mini Sidebar Browsers. (IsaacIo33)
- -- Reordered Color selectors in Settings. (IsaacIo33)
- -- Orginazed Settings into Sections. (IsaacIo33)
- -- Cleaned up Code. (IsaacIo33)
- -- Redesigned Browsing history urls. (IsaacIo33)
- -- Made Mini Sidebar Browser webviews have 2px less in height. (IsaacIo33)
+ -- You can now scroll to view the whole url on browsing history. (IsaacIo33)
+ -- Updated the design of Browsing History URLs. (IsaacIo33)
+ -- Resized the Homepage Input. (IsaacIo33)
+ -- Redesigned Sections in Settings. (IsaacIo33)
+ -- Redesigned seperator lines in Sidebar Pages. (IsaacIo33)
+ -- Re-ordered Colors in Settings. (IsaacIo33)
+ -- Moved and redesigned the Address bar. (IsaacIo33)
+ -- Added a "Change all Tabs to be Protected" button to Settings. (IsaacIo33)
+ -- Now when you click a URL in Browsing history it opens the URL. (IsaacIo33)
+ -- Now Incognito doesn't save cache and cookies. (IsaacIo33)
  `;
 
 let credits = `
@@ -75,11 +74,11 @@ newContainerEl.innerHTML=`
 <div class="selectOption" style="background-color:cyan;" onclick="document.documentElement.style.setProperty('--theme', 'cyan');"></div>
 <div class="selectOption" style="background-color:lightblue;" onclick="document.documentElement.style.setProperty('--theme', 'lightblue');"></div>
 <div class="selectOption" style="background-color:blue;" onclick="document.documentElement.style.setProperty('--theme', 'blue');"></div>
-<div class="selectOption" style="background-color:purple;" onclick="document.documentElement.style.setProperty('--theme', 'purple');"></div>
 <div class="selectOption" style="background-color:teal;" onclick="document.documentElement.style.setProperty('--theme', 'teal');"></div>
 <div class="selectOption" style="background-color:pink;" onclick="document.documentElement.style.setProperty('--theme', 'pink');"></div>
 <div class="selectOption" style="background-color:#FFA18F;" onclick="document.documentElement.style.setProperty('--theme', '#FFA18F');"></div>
 <div class="selectOption" style="background-color:#8D1FCC;" onclick="document.documentElement.style.setProperty('--theme', '#8D1FCC');"></div>
+<div class="selectOption" style="background-color:purple;" onclick="document.documentElement.style.setProperty('--theme', 'purple');"></div>
 </div>
 <br>
 <span>Custom Color: </span><input onchange="document.documentElement.style.setProperty('--theme', this.value);" type="color">
@@ -89,7 +88,7 @@ newContainerEl.innerHTML=`
 <fieldset>
 
 <legend><p>Homepage: (Include https://)</p></legend>
-<input onchange="homepage = this.value" type="text" value="${homepage}">
+<input onchange="homepage = this.value" type="text" value="${homepage}" style="width:80%;">
 
 </fieldset>
 
@@ -145,6 +144,7 @@ newContainerEl.innerHTML=`
 <hr>
 <button onclick="document.querySelector('.activeWebview').print()">Print current Page</button><br>
 <button onclick="document.querySelector('.active button').outerHTML=''">Change current Tab to be Protected</button><br>
+<button onclick="setAllAsProtected()">Change all Tabs to be Protected</button><br>
 <button onclick="closeAllTabs()">Close all Tabs</button>
 
 </fieldset>
@@ -217,12 +217,11 @@ newContainerEl.innerHTML=`
 <div class="tab" style="font-size:1.4rem; width:40px; height:35px; margin-top:15px; margin-left:5px;" onclick="newTab(homepage)"><p>+</p></div>
 </div>
 <!-- <div style="width:24%;" id="extraTabMargin"></div> -->
-<input class="tab" id="bar" placeholder="Search the Web or Enter URL">
 </div>
 </div>
+<input id="bar" placeholder="Search the Web or Enter URL">
 `;
 newContainerEl.id = "root_container";
-newContainerEl.style.height="100vh";
 document.body.appendChild(newContainerEl);
 // newSidebarPage("https://wikipedia.org/");
 
@@ -304,7 +303,7 @@ function deselectTabs(){
 function newTab(url){
     deselectTabs();
     let newTabEl = document.createElement("div");
-    newTabEl.innerHTML=`<span>Tab ${document.querySelectorAll(".tab").length - 2}</span>`;
+    newTabEl.innerHTML=`<span>Tab ${document.querySelectorAll(".tab").length - 1}</span>`;
     newTabEl.classList.add("tab");
     newTabEl.classList.add("active");
     document.getElementById("tabContainer").prepend(newTabEl);
@@ -314,6 +313,9 @@ function newTab(url){
     newWebview.classList.add("webview");
     newWebview.classList.add("activeWebview");
     newWebview.setAttribute("useragent", useragent);
+    if (incognito){
+        newWebview.setAttribute("partition", "guest");
+    }
     newContainerEl.appendChild(newWebview);
     newTabEl.addEventListener("click", () => {
     deselectTabs();
@@ -329,17 +331,18 @@ function newTab(url){
         if (event.url){
             updateAddress = false;
             addressBarEl.value = event.url;
-            addressBarEl.style.border="1px solid black";
+            addressBarEl.style.backgroundColor="black";
+            addressBarEl.style.color="white";
         } else {
             updateAddress = true;
-            addressBarEl.style.border="none";
+            addressBarEl.removeAttribute("style");
         }
     });
 
     newWebview.addEventListener("will-navigate", (event) => {
         let url = event.url;
           if (!incognito){
-             browsingHistory += "<br><br><p>"+url+"</p>";
+             browsingHistory += "<p>"+url+"</p>";
         }
     });
 
@@ -389,6 +392,8 @@ function newTab(url){
     });
 
 
+    browsingHistory += "<p> -- Opened a new Tab -- </p>";
+
 
 }
 
@@ -433,11 +438,16 @@ function update(){
     }
 
     }
+
+    if (updateHistory && lastUpdatedHistory !== browsingHistory){
+        lastUpdatedHistory = browsingHistory;
     document.getElementById("historyText").innerHTML = browsingHistory;
+    }
     // document.getElementById("tabContainer").style.width = `${50 + document.querySelectorAll('.tab').length * 6}%`;
 
     // localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
     
+
 }
 
 setInterval(update, 200);
@@ -533,7 +543,7 @@ if (event.key.toLowerCase() == "enter"){
     document.querySelector(".activeWebview").focus();
     }
     if (!incognito){
-        browsingHistory += "<br><br><p>"+addressBarEl.value+"</p>";
+        browsingHistory += "<p>"+addressBarEl.value+"</p>";
     }
 }
 });
@@ -563,6 +573,15 @@ function toggleDevTools(){
 function toggleHistory(){
     clearSidebars(document.querySelector("#history"));
     document.querySelector("#history").classList.toggle("hidden");
+}
+
+function setAllAsProtected(){
+    let allCloseBtns = document.querySelectorAll('.tab button');
+
+    for (let i = 0; i < allCloseBtns.length; i++) {
+        let element = allCloseBtns[i];
+        element.outerHTML="";
+    }
 }
 
 // The function to create a new Mini Sidebar Browser:
@@ -703,9 +722,28 @@ function closeAllTabs(){
 
 window.electronAPI.onOpenNewTab((url) => {
   if (!incognito){
-  browsingHistory += "<br><br><p>"+url+"</p>";
+  browsingHistory += "<p>"+url+"</p>";
   }
   newTab(url);
 });
 
 
+// Extra Event listeners:
+
+document.getElementById("historyText").addEventListener("contextmenu", (event) => {
+    if (event.target.tagName.toLowerCase() == "p" && event.target.id !== "historyText"){
+        console.log("It's a history paragraph!");
+        updateHistory = false;
+        event.target.outerHTML='';
+        browsingHistory = document.getElementById("historyText").innerHTML;
+        updateHistory = true;
+    }
+});
+
+document.getElementById("historyText").addEventListener("click", (event) => {
+    if (event.target.tagName.toLowerCase() == "p" && event.target.id !== "historyText"){
+        if (event.target.innerText.startsWith("http")){
+            newTab(event.target.innerText);
+        }
+    }
+});
