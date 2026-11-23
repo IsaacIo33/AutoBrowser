@@ -1,6 +1,6 @@
 let homepage = "https://isaacio33.github.io/auto-start-page";
 let searchURL = "https://google.com/search?udm=14&q=";
-let version = "1.0.2.9";
+let version = "1.0.3.9";
 let updateAddress = true;
 let lastClosedTab = "unset";
 let browsingHistory = "";
@@ -8,21 +8,14 @@ let incognito = false;
 let showBottomTitle = false;
 let updateHistory = true;
 let lastUpdatedHistory = "";
+let browserConsoleLog = "";
 let useragent = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.8127.18 AutoBrowser/${version} Safari/537.36`;
 let whatsnew = `
 
- -- You can now right click urls in the browsing history popup to move from the browsing history. (IsaacIo33)
- -- Fixed a Speed Issue. (IsaacIo33)
- -- You can now scroll to view the whole url on browsing history. (IsaacIo33)
- -- Updated the design of Browsing History URLs. (IsaacIo33)
- -- Resized the Homepage Input. (IsaacIo33)
- -- Redesigned Sections in Settings. (IsaacIo33)
- -- Redesigned seperator lines in Sidebar Pages. (IsaacIo33)
- -- Re-ordered Colors in Settings. (IsaacIo33)
- -- Moved and redesigned the Address bar. (IsaacIo33)
- -- Added a "Change all Tabs to be Protected" button to Settings. (IsaacIo33)
- -- Now when you click a URL in Browsing history it opens the URL. (IsaacIo33)
- -- Now Incognito doesn't save cache and cookies. (IsaacIo33)
+ -- Redesigned AutoBrowser Tabs (IsaacIo33)
+ -- Added Full Browser console log to the Developer Tools. (IsaacIo33)
+ -- Fixed a Speed Issue on devices with less then 8 GB of RAM. (IsaacIo33)
+
  `;
 
 let credits = `
@@ -180,6 +173,9 @@ newContainerEl.innerHTML=`
 
 <div class="sidebarApp hidden" id="devTools">
 <h1>Developer Tools</h1>
+<p>Full Browser Session Console log:</p>
+<p id="browserConsoleLog"></p>
+<hr>
 <button onclick="document.querySelector('.activeWebview').openDevTools()">Standard Chrome Developer tools</button><br>
 <button onclick="newTab('view-source:'+document.querySelector('.activeWebview').getURL())">View Page Source Code</button>
 <p>Multi-line JavaScript runner: (Runs on active webview)</p>
@@ -214,7 +210,7 @@ newContainerEl.innerHTML=`
 <img src="https://ioposts.farleyengineeredsolutions.com/drive/files/ioTest/2026_11_07_0qz_Kleki.png" style="background-color:rgba(255, 254, 254, 0.624);" alt="Menu" height="50" width="40" draggable="false" onclick="document.querySelector('#sidebar').classList.toggle('sidebarHidden'); if (document.querySelector('#sidebar').classList.contains('sidebarHidden')){ document.documentElement.style.setProperty('--sidebarWidth', '0px'); } else { document.documentElement.style.setProperty('--sidebarWidth', '40px'); }">
 <div id="tabbar">
 <div id="tabContainer">
-<div class="tab" style="font-size:1.4rem; width:40px; height:35px; margin-top:15px; margin-left:5px;" onclick="newTab(homepage)"><p>+</p></div>
+<div class="tab" style="font-size:1.4rem; width:40px; height:35px; margin-left:5px;" onclick="newTab(homepage)"><p>+</p></div>
 </div>
 <!-- <div style="width:24%;" id="extraTabMargin"></div> -->
 </div>
@@ -339,6 +335,10 @@ function newTab(url){
         }
     });
 
+    newWebview.addEventListener("console-message", (event) => {
+        browserConsoleLog += event.message;
+    });
+
     newWebview.addEventListener("will-navigate", (event) => {
         let url = event.url;
           if (!incognito){
@@ -447,10 +447,17 @@ function update(){
 
     // localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
     
+    document.getElementById("browserConsoleLog").innerText = browserConsoleLog;
 
 }
 
-setInterval(update, 200);
+let updateTime = 200;
+
+if (navigator.deviceMemory < 8){
+updateTime = 800;
+}
+
+setInterval(update, updateTime);
 
 
 
