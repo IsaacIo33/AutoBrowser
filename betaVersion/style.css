@@ -225,3 +225,11 @@ input[type=color] {
     height: 20px;
     padding: 0;
 }
+
+div[contenteditable] {
+    height: 300px;
+    overflow: auto;
+    background-color: white;
+    outline: none;
+    margin: 10px;
+}
