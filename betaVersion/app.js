@@ -1,6 +1,6 @@
 let homepage = "https://isaacio33.github.io/auto-start-page";
 let searchURL = "https://google.com/search?udm=14&q=";
-let version = "1.0.4.9";
+let version = "1.0.5.9";
 let updateAddress = true;
 let lastClosedTab = "unset";
 let browsingHistory = "";
@@ -12,25 +12,17 @@ let browserConsoleLog = "";
 let useragent = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.8127.18 AutoBrowser/${version} Safari/537.36`;
 let whatsnew = `
 
- -- Redesigned Sections in Settings. (IsaacIo33)
- -- Added Keyboard shortcuts. (IsaacIo33)
- -- Added Volume Control. (IsaacIo33)
- -- Added a Update AutoBrowser button. (IsaacIo33)
- -- Redesigned Color inputs. (IsaacIo33)
- -- Now if you click something in History that isn't a URL it searches it up. (IsaacIo33)
- -- AutoBrowser no longer keeps track of new tabs in Browsing history. (IsaacIo33)
- -- Fixed a bug where Page Titles would get off the Tab. (IsaacIo33)
- -- Now you can quickly switch between your Mini Sidebar Browsers. (IsaacIo33)
- -- Now you have to hover tabs to view and use the close button. (IsaacIo33)
- -- Fixed a Speed Issue. (IsaacIo33)
- -- Fixed another Speed Issue. (IsaacIo33)
- -- Changed the Color of Inactive tabs. (IsaacIo33)
- -- Updated the Border Radius of the address bar. (IsaacIo33)
- -- Added an Addons store to AutoBrowser. (IsaacIo33)
- -- Fixed a bug that formed during development. (IsaacIo33)
- -- Fixed a Security Issue that formed during development. (IsaacIo33)
- -- Now when you click URLs with no http in Browsing history it opens as if it does have http. (IsaacIo33)
- -- Added the Notes Section to Browsing history which lets you write down notes and/or reminders and also review and edit them. (IsaacIo33)
+ -- Fixed a bug where different console logs were on the same line on the Full Browser Session Console Log section of Developer Tools. (IsaacIo33)
+ -- Fixed a bug with Reading Mode. (IsaacIo33)
+ -- Made the Address bar 5px less in height. (IsaacIo33)
+ -- Added a Check for Updates button. (IsaacIo33)
+ -- Now the Update button only appears when you need to update. (IsaacIo33)
+ -- Removed the "Retro" border from the Theme Color selectors. (IsaacIo)
+ -- Made the Sidebar bigger. (IsaacIo33)
+ -- Fixed a sidebar Bug. (IsaacIo33) (Bug found by vikenaitProductions)
+ -- Fixed a Homepage selector input Bug. (IsaacIo33) (Bug found by vikenaitProductions)
+ -- Added the Reset Note Data button to Settings. (IsaacIo33)
+ -- Now the reset ALL data button also resets Note data. (IsaacIo33)
  `;
 
 let credits = `
@@ -61,7 +53,7 @@ newContainerEl.innerHTML=`
 <h1 onclick="readingMode()" id="readOpenBtn"><i class="fa-solid fa-book-open"></i></h1>
 <h1 onclick="toggleDevTools()" id="devToolsOpenBtn"><i class="fa-solid fa-code"></i></h1>
 <h1 onclick="toggleHistory()" id="historyOpenBtn"><i class="fa-solid fa-clock-rotate-left"></i></h1>
-<h1 onclick="window.location.reload()"><i class="fa-solid fa-cloud-arrow-down"></i></h1>
+<h1 onclick="window.location.reload()" id="updateBtn" class="hidden"><i class="fa-solid fa-cloud-arrow-down"></i></h1>
 <h1 onclick="newSidebarPage(document.querySelector('.activeWebview').getURL())"><i class="fa-regular fa-square-plus"></i></h1>
 </div>
 
@@ -99,7 +91,7 @@ newContainerEl.innerHTML=`
 <fieldset>
 
 <legend><p>Homepage: (Include https://)</p></legend>
-<input onchange="homepage = this.value" type="text" value="${homepage}" style="width:80%;">
+<input onchange="homepage = this.value" type="text" value="${homepage}" style="width:80%;" id="homepageInput">
 
 </fieldset>
 
@@ -128,11 +120,11 @@ newContainerEl.innerHTML=`
 
 <fieldset>
 <legend><p>Data Reset</p></legend>
-<button onclick="localStorage.removeItem('data'); localStorage.removeItem('sidebarPages'); localStorage.removeItem('tabs'); window.location.reload()">Reset ALL Data to default</button><br>
+<button onclick="localStorage.removeItem('data'); localStorage.removeItem('sidebarPages'); localStorage.removeItem('tabs'); localStorage.removeItem('noteData'); window.location.reload()">Reset ALL Data to default</button><br>
 <button onclick="localStorage.removeItem('data'); window.location.reload()">Reset Most Data to default</button><br>
 <button onclick="localStorage.removeItem('sidebarPages'); window.location.reload()">Reset Mini Sidebar Browser Data to default</button><br>
-<button onclick="localStorage.removeItem('tabs'); window.location.reload()">Reset Tab Data to default</button>
-
+<button onclick="localStorage.removeItem('tabs'); window.location.reload()">Reset Tab Data to default</button><br>
+<button onclick="localStorage.removeItem('noteData'); window.location.reload()">Rest Note Data to Default</button>
 </fieldset>
 
 <!--
@@ -187,6 +179,8 @@ newContainerEl.innerHTML=`
 <button onclick="newTab('https://github.com/IsaacIo33/AutoBrowser/wiki')">Wiki</button>
 <button onclick="newTab('https://github.com/IsaacIo33/AutoBrowser/')">Repo</button>
 <button onclick="newTab('https://isaacio33.github.io/auto-start-page/addons.html')">Addons</button>
+<button onclick="checkForUpdates()">Check for Updates</button>
+
 
 </fieldset>
 
@@ -239,7 +233,7 @@ newContainerEl.innerHTML=`
 
 
 <div style="display:flex; align-items:center; justify-content:center;">
-<img src="https://ioposts.farleyengineeredsolutions.com/drive/files/ioTest/2026_11_07_0qz_Kleki.png" style="background-color:rgba(255, 254, 254, 0.624);" alt="Menu" height="50" width="40" draggable="false" onclick="document.querySelector('#sidebar').classList.toggle('sidebarHidden'); if (document.querySelector('#sidebar').classList.contains('sidebarHidden')){ document.documentElement.style.setProperty('--sidebarWidth', '0px'); } else { document.documentElement.style.setProperty('--sidebarWidth', '40px'); }">
+<img src="https://ioposts.farleyengineeredsolutions.com/drive/files/ioTest/2026_11_07_0qz_Kleki.png" style="background-color:rgba(255, 254, 254, 0.624);" alt="Menu" height="50" width="40" draggable="false" onclick="document.querySelector('#sidebar').classList.toggle('sidebarHidden'); if (document.querySelector('#sidebar').classList.contains('sidebarHidden')){ document.documentElement.style.setProperty('--sidebarWidth', '0px'); } else { document.documentElement.style.setProperty('--sidebarWidth', '45px'); }">
 <div id="tabbar">
 <div id="tabContainer">
 <div class="tab" style="font-size:1.4rem; width:40px; height:35px; margin-left:5px;" id="newTabBtn" onclick="newTab(homepage)"><p>+</p></div>
@@ -263,6 +257,7 @@ if (!localStorage.getItem("data")){
     let sCookie = cookie.split("%%%");
     document.documentElement.style.setProperty('--theme', sCookie[0]);
     homepage = sCookie[1];
+	document.getElementById("homepageInput").value = homepage;
     searchURL = sCookie[2];
     lastClosedTab = sCookie[3];
     browsingHistory = sCookie[4];
@@ -368,7 +363,7 @@ function newTab(url){
     });
 
     newWebview.addEventListener("console-message", (event) => {
-        browserConsoleLog += event.message;
+        browserConsoleLog += "\n" + event.message;
     });
 
     newWebview.addEventListener("will-navigate", (event) => {
@@ -483,6 +478,7 @@ function update(){
     if (document.getElementById("browserConsoleLog").innerText !== browserConsoleLog){
     document.getElementById("browserConsoleLog").innerText = browserConsoleLog;
     }
+	
 
 }
 
@@ -695,6 +691,7 @@ function readingMode(){
         } else {
     document.querySelector(".activeWebview").executeJavaScript(`
         function startReadingModeZZ(){
+		document.body.style.overflow="hidden";
         document.reading = true;
         let newReadingMode = document.createElement("iframe");
         newReadingMode.id = "readingModeIframe";
@@ -713,6 +710,7 @@ function readingMode(){
 
 
         function endReadingModeZZ(){
+		document.body.style.overflow="auto";
         document.getElementById("readingModeIframe").outerHTML='';   
         document.reading = false;
         }
@@ -856,3 +854,43 @@ document.addEventListener("keydown", (event) => {
         }, 100);
     }
 });
+
+// Check for updates: 
+
+function checkForUpdates(){
+
+let url = "https://raw.githubusercontent.com/IsaacIo33/AutoBrowser/refs/heads/main/ex/app.js"
+// 1. Create the request object
+const xhr = new XMLHttpRequest();
+
+// 2. Configure it: GET-request for the URL
+xhr.open('GET', url, true);
+
+// 3. Set up a listener for when the request loads
+xhr.onload = function() {
+  if (xhr.status >= 200 && xhr.status < 300) {
+    // Parse the string response into JSON
+    const data = xhr.responseText;
+let versionOnline = data.split('version = "')[1].split('"')[0];
+if (version !== versionOnline){
+document.getElementById("updateBtn").classList.remove("hidden");
+alert("Your version is out of date click the cloud arrow down button to update!");
+} else {
+alert("The version you are using is the latest version.");
+}
+  } else {
+    console.error('Server returned an error:', xhr.status);
+  }
+};
+
+// 4. Handle networking errors
+xhr.onerror = function() {
+  console.error('Network request failed');
+};
+
+// 5. Send the request
+xhr.send();
+
+
+
+}
