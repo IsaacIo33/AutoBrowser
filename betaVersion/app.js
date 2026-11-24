@@ -29,6 +29,8 @@ let whatsnew = `
  -- Added an Addons store to AutoBrowser. (IsaacIo33)
  -- Fixed a bug that formed during development. (IsaacIo33)
  -- Fixed a Security Issue that formed during development. (IsaacIo33)
+ -- Now when you click URLs with no http in Browsing history it opens as if it does have http. (IsaacIo33)
+ -- Added the Notes Section to Browsing history which lets you write down notes and/or reminders and also review and edit them. (IsaacIo33)
  `;
 
 let credits = `
@@ -196,6 +198,7 @@ newContainerEl.innerHTML=`
 <div class="sidebarApp hidden" id="devTools">
 <h1>Developer Tools</h1>
 <p>Full Browser Session Console log:</p>
+<button onclick="browserConsoleLog = ''">Clear</button>
 <p id="browserConsoleLog"></p>
 <hr>
 <button onclick="document.querySelector('.activeWebview').openDevTools()">Standard Chrome Developer tools</button><br>
@@ -225,6 +228,9 @@ newContainerEl.innerHTML=`
 </div>
 
 <div class="sidebarApp hidden" id="history">
+<h3>Notes:</h3>
+<div contenteditable="true" oninput="localStorage.setItem('noteData', this.innerHTML)">${localStorage.getItem("noteData")}</div>
+<hr>
 <h1>History</h1>
 <input type="checkbox" onchange="incognito = this.checked; notify('Incognito Status updated: '+incognito, 500)"><span>Incognito</span><br>
 <button onclick="browsingHistory = ''">Clear History</button>
@@ -806,6 +812,8 @@ document.getElementById("historyText").addEventListener("click", (event) => {
     if (event.target.tagName.toLowerCase() == "p" && event.target.id !== "historyText"){
         if (event.target.innerText.startsWith("http")){
             newTab(event.target.innerText);
+        } else if (!event.target.innerText.includes(" ") && event.target.innerText.split(".")[1] && event.target.innerText.split(".")[1] !== ''){
+            newTab("http://"+event.target.innerText);
         } else {
             newTab(`${searchURL}${event.target.innerText}`);
         }
