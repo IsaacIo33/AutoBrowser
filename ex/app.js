@@ -1,6 +1,6 @@
 let homepage = "https://isaacio33.github.io/auto-start-page";
 let searchURL = "https://google.com/search?udm=14&q=";
-let version = "1.0.3.9";
+let version = "1.0.4.9";
 let updateAddress = true;
 let lastClosedTab = "unset";
 let browsingHistory = "";
@@ -12,10 +12,25 @@ let browserConsoleLog = "";
 let useragent = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.8127.18 AutoBrowser/${version} Safari/537.36`;
 let whatsnew = `
 
- -- Redesigned AutoBrowser Tabs (IsaacIo33)
- -- Added Full Browser console log to the Developer Tools. (IsaacIo33)
- -- Fixed a Speed Issue on devices with less then 8 GB of RAM. (IsaacIo33)
-
+ -- Redesigned Sections in Settings. (IsaacIo33)
+ -- Added Keyboard shortcuts. (IsaacIo33)
+ -- Added Volume Control. (IsaacIo33)
+ -- Added a Update AutoBrowser button. (IsaacIo33)
+ -- Redesigned Color inputs. (IsaacIo33)
+ -- Now if you click something in History that isn't a URL it searches it up. (IsaacIo33)
+ -- AutoBrowser no longer keeps track of new tabs in Browsing history. (IsaacIo33)
+ -- Fixed a bug where Page Titles would get off the Tab. (IsaacIo33)
+ -- Now you can quickly switch between your Mini Sidebar Browsers. (IsaacIo33)
+ -- Now you have to hover tabs to view and use the close button. (IsaacIo33)
+ -- Fixed a Speed Issue. (IsaacIo33)
+ -- Fixed another Speed Issue. (IsaacIo33)
+ -- Changed the Color of Inactive tabs. (IsaacIo33)
+ -- Updated the Border Radius of the address bar. (IsaacIo33)
+ -- Added an Addons store to AutoBrowser. (IsaacIo33)
+ -- Fixed a bug that formed during development. (IsaacIo33)
+ -- Fixed a Security Issue that formed during development. (IsaacIo33)
+ -- Now when you click URLs with no http in Browsing history it opens as if it does have http. (IsaacIo33)
+ -- Added the Notes Section to Browsing history which lets you write down notes and/or reminders and also review and edit them. (IsaacIo33)
  `;
 
 let credits = `
@@ -46,6 +61,7 @@ newContainerEl.innerHTML=`
 <h1 onclick="readingMode()" id="readOpenBtn"><i class="fa-solid fa-book-open"></i></h1>
 <h1 onclick="toggleDevTools()" id="devToolsOpenBtn"><i class="fa-solid fa-code"></i></h1>
 <h1 onclick="toggleHistory()" id="historyOpenBtn"><i class="fa-solid fa-clock-rotate-left"></i></h1>
+<h1 onclick="window.location.reload()"><i class="fa-solid fa-cloud-arrow-down"></i></h1>
 <h1 onclick="newSidebarPage(document.querySelector('.activeWebview').getURL())"><i class="fa-regular fa-square-plus"></i></h1>
 </div>
 
@@ -78,6 +94,8 @@ newContainerEl.innerHTML=`
 
 </fieldset>
 
+<br>
+
 <fieldset>
 
 <legend><p>Homepage: (Include https://)</p></legend>
@@ -85,7 +103,7 @@ newContainerEl.innerHTML=`
 
 </fieldset>
 
-
+<br>
 
 <fieldset>
 <legend><p>Search Engine:</p></legend>
@@ -106,6 +124,7 @@ newContainerEl.innerHTML=`
 
 </fieldset>
 
+<br>
 
 <fieldset>
 <legend><p>Data Reset</p></legend>
@@ -142,6 +161,8 @@ newContainerEl.innerHTML=`
 
 </fieldset>
 
+<br>
+
 <fieldset>
 <legend><p>Website Customize Settings:</p></legend>
 
@@ -149,6 +170,8 @@ newContainerEl.innerHTML=`
 <button onclick="document.querySelector('.activeWebview').executeJavaScript('document.body.style.filter=\`grayscale(1)\`;')">Grayscale</button>
 
 </fieldset>
+
+<br>
 
 <fieldset>
 
@@ -163,6 +186,7 @@ newContainerEl.innerHTML=`
 <button onclick="notify(credits, 5000, '400px')">Credits</button>
 <button onclick="newTab('https://github.com/IsaacIo33/AutoBrowser/wiki')">Wiki</button>
 <button onclick="newTab('https://github.com/IsaacIo33/AutoBrowser/')">Repo</button>
+<button onclick="newTab('https://isaacio33.github.io/auto-start-page/addons.html')">Addons</button>
 
 </fieldset>
 
@@ -174,6 +198,7 @@ newContainerEl.innerHTML=`
 <div class="sidebarApp hidden" id="devTools">
 <h1>Developer Tools</h1>
 <p>Full Browser Session Console log:</p>
+<button onclick="browserConsoleLog = ''">Clear</button>
 <p id="browserConsoleLog"></p>
 <hr>
 <button onclick="document.querySelector('.activeWebview').openDevTools()">Standard Chrome Developer tools</button><br>
@@ -196,9 +221,16 @@ newContainerEl.innerHTML=`
 <br>
 <p>Custom User Agent:</p>
 <textarea onchange="document.querySelector('.activeWebview').setUserAgent(this.value); document.querySelector('.activeWebview').reload()" placeholder="Enter User Agent"></textarea>
+<hr>
+<br>
+<p>Volume Control:</p>
+<input type="range" oninput="setVolume(this.value)" min="0" max="10" value="10">
 </div>
 
 <div class="sidebarApp hidden" id="history">
+<h3>Notes:</h3>
+<div contenteditable="true" oninput="localStorage.setItem('noteData', this.innerHTML)">${localStorage.getItem("noteData")}</div>
+<hr>
 <h1>History</h1>
 <input type="checkbox" onchange="incognito = this.checked; notify('Incognito Status updated: '+incognito, 500)"><span>Incognito</span><br>
 <button onclick="browsingHistory = ''">Clear History</button>
@@ -210,7 +242,7 @@ newContainerEl.innerHTML=`
 <img src="https://ioposts.farleyengineeredsolutions.com/drive/files/ioTest/2026_11_07_0qz_Kleki.png" style="background-color:rgba(255, 254, 254, 0.624);" alt="Menu" height="50" width="40" draggable="false" onclick="document.querySelector('#sidebar').classList.toggle('sidebarHidden'); if (document.querySelector('#sidebar').classList.contains('sidebarHidden')){ document.documentElement.style.setProperty('--sidebarWidth', '0px'); } else { document.documentElement.style.setProperty('--sidebarWidth', '40px'); }">
 <div id="tabbar">
 <div id="tabContainer">
-<div class="tab" style="font-size:1.4rem; width:40px; height:35px; margin-left:5px;" onclick="newTab(homepage)"><p>+</p></div>
+<div class="tab" style="font-size:1.4rem; width:40px; height:35px; margin-left:5px;" id="newTabBtn" onclick="newTab(homepage)"><p>+</p></div>
 </div>
 <!-- <div style="width:24%;" id="extraTabMargin"></div> -->
 </div>
@@ -353,6 +385,7 @@ function newTab(url){
 
 
     newWebview.addEventListener("page-title-updated", (event) => {
+        event.title = event.title.slice(0, 14);
         newTabEl.querySelector("span").innerHTML=event.title.replaceAll(" ", "&nbsp;");
     });
 
@@ -392,7 +425,7 @@ function newTab(url){
     });
 
 
-    browsingHistory += "<p> -- Opened a new Tab -- </p>";
+    // browsingHistory += "<p> -- Opened a new Tab -- </p>";
 
 
 }
@@ -409,9 +442,9 @@ function update(){
     // document.title = `${document.querySelector(".activeWebview").getTitle()} - AutoBrowser`;
 
     if (document.activeElement !== addressBarEl && updateAddress){
-        if (document.querySelector(".activeWebview").getURL() !== "https://isaacio33.github.io/auto-start-page/"){
+        if (document.querySelector(".activeWebview").getURL() !== "https://isaacio33.github.io/auto-start-page/" && addressBarEl.value !== document.querySelector(".activeWebview").getURL()){
              addressBarEl.value = document.querySelector(".activeWebview").getURL();
-        }  else {
+        }  else if (document.querySelector(".activeWebview").getURL() == "https://isaacio33.github.io/auto-start-page/") {
             addressBarEl.value = "";
         }
     }
@@ -447,7 +480,9 @@ function update(){
 
     // localStorage.setItem("data", `${window.getComputedStyle(document.documentElement).getPropertyValue('--theme').trim()}%%%${homepage}%%%${searchURL}%%%${lastClosedTab}%%%${browsingHistory}%%%${incognito}`);
     
+    if (document.getElementById("browserConsoleLog").innerText !== browserConsoleLog){
     document.getElementById("browserConsoleLog").innerText = browserConsoleLog;
+    }
 
 }
 
@@ -514,6 +549,15 @@ function often(){
     }
 
    }
+
+    document.querySelector(".activeWebview").executeJavaScript(`document.addonUrl`).then(result => {
+        if (result && document.querySelector(".activeWebview").getURL().startsWith("https://isaacio33.github.io/auto-start-page/addons.html")){
+        document.querySelector(".activeWebview").loadURL(document.querySelector(".activeWebview").getURL().split("?downloadUrl=")[0]);
+        newSidebarPage(result);
+        }
+    }).catch(err => console.error(err));
+
+
 }
 
 setInterval(often, 1200);
@@ -594,7 +638,9 @@ function setAllAsProtected(){
 // The function to create a new Mini Sidebar Browser:
 
 function newSidebarPage(url){
+    let lastId = document.querySelectorAll(".newSidebarPages").length;
     let newSidebarPageEl = document.createElement("h1");
+    newSidebarPageEl.classList.add("newSidebarPages");
     url = url.replaceAll("www.", "");
     let simpleURL = url.toUpperCase().split('/')[2].split('')[0];
     newSidebarPageEl.innerHTML=`<img src="https://cdn.pixabay.com/photo/2013/04/01/08/26/browser-98386_1280.png" alt="" height="20">`;
@@ -607,7 +653,9 @@ function newSidebarPage(url){
     <button onclick="this.parentElement.querySelector('webview').reload()" style="width:5%;"><i class="fa-solid fa-rotate-right"></i></button>
     <button onclick="this.parentElement.querySelector('webview').goBack()" style="width:5%;"><i class="fa-solid fa-chevron-left"></i></button>
     <button onclick="this.parentElement.querySelector('webview').goForward()" style="width:5%;"><i class="fa-solid fa-chevron-right"></i></button>
-    <input placeholder="Enter URL..." style="width:70%; height:15px;">
+    <input placeholder="Enter URL..." style="width:58%; height:15px;">
+    <button onclick="document.querySelectorAll('.newSidebarPages')[${lastId-1}].click()" style="width:5%;"><i class="fa-solid fa-backward"></i></button>
+    <button onclick="document.querySelectorAll('.newSidebarPages')[${lastId+1}].click()" style="width:5%;"><i class="fa-solid fa-forward"></i></button>
     <button onclick="newTab(this.parentElement.querySelector('webview').getURL()); this.parentElement.classList.add('hidden')" style="width:5%;"><i class="fa-solid fa-file-export"></i></button>
     <webview src="${url}" style="height:calc(100% - 17px); width:100%; display:flex;" useragent="${useragent}"></webview>`;
     newSidebarPageEl.addEventListener("click", () => {
@@ -735,6 +783,19 @@ window.electronAPI.onOpenNewTab((url) => {
 });
 
 
+// setVolume function:
+
+function setVolume(value){
+    value = value / 10;
+    document.querySelector(".activeWebview").executeJavaScript(`
+        for (let i = 0; i < document.querySelectorAll("audio, video").length; i++) {
+        let element = document.querySelectorAll("audio, video")[i];
+        element.volume = ${value};
+    }
+        `);
+}
+
+
 // Extra Event listeners:
 
 document.getElementById("historyText").addEventListener("contextmenu", (event) => {
@@ -751,6 +812,47 @@ document.getElementById("historyText").addEventListener("click", (event) => {
     if (event.target.tagName.toLowerCase() == "p" && event.target.id !== "historyText"){
         if (event.target.innerText.startsWith("http")){
             newTab(event.target.innerText);
+        } else if (!event.target.innerText.includes(" ") && event.target.innerText.split(".")[1] && event.target.innerText.split(".")[1] !== ''){
+            newTab("http://"+event.target.innerText);
+        } else {
+            newTab(`${searchURL}${event.target.innerText}`);
         }
+    }
+});
+
+document.addEventListener("keydown", (event) => {
+    if (event.key == "r" && event.ctrlKey){
+        event.preventDefault();
+        document.querySelector(".activeWebview").reload();
+    } else if (event.key == "R" && event.ctrlKey){
+        event.preventDefault();
+        document.querySelector(".activeWebview").reloadIgnoringCache();
+    } else if (event.key.toLowerCase() == "j" && event.ctrlKey){
+        event.preventDefault();
+        document.querySelector(".activeWebview").openDevTools();
+    } else if (event.key == "T" && event.ctrlKey){
+        event.preventDefault();
+        newTab(lastClosedTab);
+    } else if (event.key == "t" && event.ctrlKey){
+        event.preventDefault();
+        newTab(homepage);
+    } else if (event.key.toLowerCase() == "u" && event.ctrlKey){
+        event.preventDefault();
+        newTab("view-source:"+document.querySelector(".activeWebview").getURL());
+    } else if (event.key.toLowerCase() == "arrowleft" && event.altKey){
+        event.preventDefault();
+        document.querySelector(".activeWebview").goBack();
+    } else if (event.key.toLowerCase() == "arrowright" && event.altKey){
+        event.preventDefault();
+        document.querySelector(".activeWebview").goForward();
+    } else if (event.key.toLowerCase() == "w" && event.ctrlKey){
+        event.preventDefault();
+        lastClosedTab = document.querySelector(".activeWebview").getURL();
+        setTimeout(() => {
+    document.querySelector(".activeWebview").outerHTML="";
+    document.querySelector(".active").outerHTML="";
+        deselectTabs();
+    document.querySelector(".tab").click();
+        }, 100);
     }
 });
