@@ -23,6 +23,9 @@ let whatsnew = `
  -- Fixed a Homepage selector input Bug. (IsaacIo33) (Bug found by vikenaitProductions)
  -- Added the Reset Note Data button to Settings. (IsaacIo33)
  -- Now the reset ALL data button also resets Note data. (IsaacIo33)
+ -- Fixed a bug where if you never wrote any note before it would display null. (IsaacIo33)
+ -- Made Icons in the sidebar appear closer together to give the Sidebar more room. (IsaacIo33)
+ -- Now you can click to open file urls in Browsing history. (IsaacIo33)
  `;
 
 let credits = `
@@ -39,6 +42,11 @@ let credits = `
 // This function is executed on startup:
 
 function startup(){
+
+if (localStorage.getItem("noteData") == null){
+localStorage.setItem("noteData", "");
+}
+
 let newContainerEl = document.createElement("div");
 newContainerEl.innerHTML=`
 
@@ -178,7 +186,7 @@ newContainerEl.innerHTML=`
 <button onclick="notify(credits, 5000, '400px')">Credits</button>
 <button onclick="newTab('https://github.com/IsaacIo33/AutoBrowser/wiki')">Wiki</button>
 <button onclick="newTab('https://github.com/IsaacIo33/AutoBrowser/')">Repo</button>
-<button onclick="newTab('https://isaacio33.github.io/auto-start-page/addons.html')">Addons</button>
+<button onclick="newTab('https://isaacio33.github.io/auto-start-page/addons.html')">Addons</button><br>
 <button onclick="checkForUpdates()">Check for Updates</button>
 
 
@@ -394,6 +402,12 @@ function newTab(url){
         });
             `);
     });
+
+	// newWebview.addEventListener("did-fail-load", (event) => {
+		// if (event.errorCode.startsWith(4) || event.errorCode.startsWith(5)){
+		// newWebview.loadURL("data:text/html,<h1 style='font-family:sans-serif;'>404 Page not found...</h1>");
+		// }
+	// });
 
     newCloseBtn.addEventListener("mousedown", () => {
         deselectTabs();
@@ -809,6 +823,8 @@ document.getElementById("historyText").addEventListener("contextmenu", (event) =
 document.getElementById("historyText").addEventListener("click", (event) => {
     if (event.target.tagName.toLowerCase() == "p" && event.target.id !== "historyText"){
         if (event.target.innerText.startsWith("http")){
+            newTab(event.target.innerText);
+        } else if (event.target.innerText.startsWith("file://")){
             newTab(event.target.innerText);
         } else if (!event.target.innerText.includes(" ") && event.target.innerText.split(".")[1] && event.target.innerText.split(".")[1] !== ''){
             newTab("http://"+event.target.innerText);
