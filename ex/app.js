@@ -1,6 +1,6 @@
 let homepage = "https://isaacio33.github.io/auto-start-page";
 let searchURL = "https://google.com/search?udm=14&q=";
-let version = "1.0.5.9";
+let version = "1.0.6.9";
 let updateAddress = true;
 let lastClosedTab = "unset";
 let browsingHistory = "";
@@ -9,23 +9,17 @@ let showBottomTitle = false;
 let updateHistory = true;
 let lastUpdatedHistory = "";
 let browserConsoleLog = "";
+let tabs = [];
 let useragent = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.8127.18 AutoBrowser/${version} Safari/537.36`;
 let whatsnew = `
 
- -- Fixed a bug where different console logs were on the same line on the Full Browser Session Console Log section of Developer Tools. (IsaacIo33)
- -- Fixed a bug with Reading Mode. (IsaacIo33)
- -- Made the Address bar 5px less in height. (IsaacIo33)
- -- Added a Check for Updates button. (IsaacIo33)
- -- Now the Update button only appears when you need to update. (IsaacIo33)
- -- Removed the "Retro" border from the Theme Color selectors. (IsaacIo)
- -- Made the Sidebar bigger. (IsaacIo33)
- -- Fixed a sidebar Bug. (IsaacIo33) (Bug found by vikenaitProductions)
- -- Fixed a Homepage selector input Bug. (IsaacIo33) (Bug found by vikenaitProductions)
- -- Added the Reset Note Data button to Settings. (IsaacIo33)
- -- Now the reset ALL data button also resets Note data. (IsaacIo33)
- -- Fixed a bug where if you never wrote any note before it would display null. (IsaacIo33)
- -- Made Icons in the sidebar appear closer together to give the Sidebar more room. (IsaacIo33)
- -- Now you can click to open file urls in Browsing history. (IsaacIo33)
+ -- Tabs are now powered by JS Objects. (IsaacIo33)
+ -- Removed unneeded code and replaced it with better code. (IsaacIo33)
+ -- The Check for Updates button can now detect if your version is unreleased or modified. (IsaacIo33)
+ -- Moved a section in Developer Tools. (IsaacIo33)
+ -- Added Tab Groups. (IsaacIo33)
+ -- Now when you close a tab it opens the tab that was before it instead of opening the last tab. (IsaacIo33)
+ -- Fixed a bug where when you close the first tab it doesn't open any tab. (IsaacIo33)
  `;
 
 let credits = `
@@ -128,7 +122,7 @@ newContainerEl.innerHTML=`
 
 <fieldset>
 <legend><p>Data Reset</p></legend>
-<button onclick="localStorage.removeItem('data'); localStorage.removeItem('sidebarPages'); localStorage.removeItem('tabs'); localStorage.removeItem('noteData'); window.location.reload()">Reset ALL Data to default</button><br>
+<button onclick="localStorage.clear(); window.location.reload()">Reset ALL Data to default</button><br>
 <button onclick="localStorage.removeItem('data'); window.location.reload()">Reset Most Data to default</button><br>
 <button onclick="localStorage.removeItem('sidebarPages'); window.location.reload()">Reset Mini Sidebar Browser Data to default</button><br>
 <button onclick="localStorage.removeItem('tabs'); window.location.reload()">Reset Tab Data to default</button><br>
@@ -174,6 +168,15 @@ newContainerEl.innerHTML=`
 <br>
 
 <fieldset>
+<legend>New Tab with Tab Group:</legend>
+<input placeholder="Tab Group name">
+<button onclick="newTab(homepage, this.parentElement.querySelector('input').value.replaceAll(' ', '_'))">Add</button>
+</fieldset>
+
+
+<br>
+
+<fieldset>
 
 <legend><p>About:</p></legend>
 <div style="display:flex; align-items:center: text-align:center; justify-content:space-around;">
@@ -199,10 +202,7 @@ newContainerEl.innerHTML=`
 
 <div class="sidebarApp hidden" id="devTools">
 <h1>Developer Tools</h1>
-<p>Full Browser Session Console log:</p>
-<button onclick="browserConsoleLog = ''">Clear</button>
-<p id="browserConsoleLog"></p>
-<hr>
+
 <button onclick="document.querySelector('.activeWebview').openDevTools()">Standard Chrome Developer tools</button><br>
 <button onclick="newTab('view-source:'+document.querySelector('.activeWebview').getURL())">View Page Source Code</button>
 <p>Multi-line JavaScript runner: (Runs on active webview)</p>
@@ -227,6 +227,12 @@ newContainerEl.innerHTML=`
 <br>
 <p>Volume Control:</p>
 <input type="range" oninput="setVolume(this.value)" min="0" max="10" value="10">
+<br>
+<hr>
+<p>Full Browser Session Console log:</p>
+<button onclick="browserConsoleLog = ''">Clear</button>
+<p id="browserConsoleLog"></p>
+
 </div>
 
 <div class="sidebarApp hidden" id="history">
@@ -243,9 +249,9 @@ newContainerEl.innerHTML=`
 <div style="display:flex; align-items:center; justify-content:center;">
 <img src="https://ioposts.farleyengineeredsolutions.com/drive/files/ioTest/2026_11_07_0qz_Kleki.png" style="background-color:rgba(255, 254, 254, 0.624);" alt="Menu" height="50" width="40" draggable="false" onclick="document.querySelector('#sidebar').classList.toggle('sidebarHidden'); if (document.querySelector('#sidebar').classList.contains('sidebarHidden')){ document.documentElement.style.setProperty('--sidebarWidth', '0px'); } else { document.documentElement.style.setProperty('--sidebarWidth', '45px'); }">
 <div id="tabbar">
-<div id="tabContainer">
+<div id="tabContainer"></div>
 <div class="tab" style="font-size:1.4rem; width:40px; height:35px; margin-left:5px;" id="newTabBtn" onclick="newTab(homepage)"><p>+</p></div>
-</div>
+
 <!-- <div style="width:24%;" id="extraTabMargin"></div> -->
 </div>
 </div>
@@ -327,17 +333,33 @@ function deselectTabs(){
         element.classList.remove("activeWebview");
         element.style.display="none";
     }
+	
+for (let i = 0; i < tabs.length; i++){
+tabs[i].active = false;
+}
 }
 
 // newTab function:
 
-function newTab(url){
+function newTab(url, tabParent){
     deselectTabs();
-    let newTabEl = document.createElement("div");
-    newTabEl.innerHTML=`<span>Tab ${document.querySelectorAll(".tab").length - 1}</span>`;
-    newTabEl.classList.add("tab");
-    newTabEl.classList.add("active");
-    document.getElementById("tabContainer").prepend(newTabEl);
+	let nid = 0;
+	
+	for (let i = 0; i < tabs.length; i++){
+	let ce = tabs[i];
+	nid += ce.id;
+	}
+	
+	let newTabObj = { // zuzu1
+	id: nid,
+	favicon: null,
+	title: `Tab ${nid}`,
+	active: true,
+	root: tabParent
+	};
+	
+	tabs.push(newTabObj);
+
     let newWebview = document.createElement("webview");
     newWebview.src = url;
     newWebview.setAttribute("allowpopups", "true");
@@ -348,15 +370,7 @@ function newTab(url){
         newWebview.setAttribute("partition", "guest");
     }
     newContainerEl.appendChild(newWebview);
-    newTabEl.addEventListener("click", () => {
-    deselectTabs();
-    newWebview.classList.add("activeWebview");
-    newWebview.style.display='flex';
-    newTabEl.classList.add("active");
-    });
-    let newCloseBtn = document.createElement("button");
-    newCloseBtn.innerHTML='<i class="fa-solid fa-xmark"></i>';
-    newTabEl.appendChild(newCloseBtn);
+
 
     newWebview.addEventListener("update-target-url", (event) => {
         if (event.url){
@@ -382,14 +396,16 @@ function newTab(url){
     });
 
     newWebview.addEventListener("page-favicon-updated", (event) => {
-        newTabEl.style.backgroundImage=`url(${event.favicons[0]})`;
+        newTabObj.favicon=`url(${event.favicons[0]})`;
+updateTabs();
     });
 
 
 
     newWebview.addEventListener("page-title-updated", (event) => {
         event.title = event.title.slice(0, 14);
-        newTabEl.querySelector("span").innerHTML=event.title.replaceAll(" ", "&nbsp;");
+        newTabObj.title=event.title.replaceAll(" ", "&nbsp;");
+updateTabs();
     });
 
     newWebview.addEventListener("dom-ready", () => {
@@ -409,33 +425,15 @@ function newTab(url){
 		// }
 	// });
 
-    newCloseBtn.addEventListener("mousedown", () => {
-        deselectTabs();
-        lastClosedTab = newWebview.getURL();
-    newWebview.outerHTML="";
-    newTabEl.outerHTML="";
-    document.querySelector(".tab").click();
-    });
 
-    newTabEl.addEventListener("mouseover", () => {
-        if (showBottomTitle){
-        notify(newWebview.getTitle(), 500, 30+"px", window.innerHeight - 30 + "px");
-        }
-    });
-
-    newTabEl.addEventListener("auxclick", (event) => {
-        if (event.button === 1){
-          deselectTabs();
-        lastClosedTab = newWebview.getURL();
-    newWebview.outerHTML="";
-    newTabEl.outerHTML="";
-    document.querySelector(".tab").click();
-        }
-    });
 
 
     // browsingHistory += "<p> -- Opened a new Tab -- </p>";
 
+
+setTimeout(() => {
+updateTabs();
+}, 20);
 
 }
 
@@ -493,6 +491,11 @@ function update(){
     document.getElementById("browserConsoleLog").innerText = browserConsoleLog;
     }
 	
+	
+	
+
+	
+
 
 }
 
@@ -503,6 +506,8 @@ updateTime = 800;
 }
 
 setInterval(update, updateTime);
+
+
 
 
 
@@ -888,9 +893,14 @@ xhr.onload = function() {
     // Parse the string response into JSON
     const data = xhr.responseText;
 let versionOnline = data.split('version = "')[1].split('"')[0];
-if (version !== versionOnline){
+let localVersion = Number(version.replaceAll(".", ""));
+let parsedOnlineVersion = Number(versionOnline.replaceAll(".", ""));;
+if (localVersion < parsedOnlineVersion){
 document.getElementById("updateBtn").classList.remove("hidden");
 alert("Your version is out of date click the cloud arrow down button to update!");
+} else if (localVersion > parsedOnlineVersion){
+document.getElementById("updateBtn").classList.remove("hidden");
+alert("Your version is unreleased or modified click the cloud arrow down button to refresh!");
 } else {
 alert("The version you are using is the latest version.");
 }
@@ -906,6 +916,111 @@ xhr.onerror = function() {
 
 // 5. Send the request
 xhr.send();
+
+
+
+}
+
+// To update tabs: 
+
+function updateTabs(){
+// zuzu2
+
+document.getElementById("tabContainer").innerHTML='';
+
+for (let i = 0; i < tabs.length; i++){
+let ce = tabs[i];
+tabs[i].id = i;
+}
+
+for (let i = 0; i < tabs.length; i++){
+let ce = tabs[i];
+
+let toAppendTo = document.getElementById("tabContainer");
+
+if (ce.root){
+if (!document.querySelector(`.group_${ce.root}`)){
+let newGroup = document.createElement("div");
+newGroup.innerHTML = `<p style="margin:3px;">${ce.root}</p><button onclick="newTab(homepage, '${ce.root}')" class="newGroupTabBtn"><i class="fa-regular fa-square-plus"></i></button>`;
+newGroup.classList.add("group");
+newGroup.classList.add(`group_${ce.root}`);
+document.getElementById("tabContainer").appendChild(newGroup);
+toAppendTo = document.querySelector(`.group_${ce.root}`);
+
+} else {
+toAppendTo = document.querySelector(`.group_${ce.root}`);
+}
+}
+
+let newWebview = document.querySelectorAll(".webview")[ce.id];
+    let newTabEl = document.createElement("div");
+    newTabEl.innerHTML=`<span>${ce.title}</span>`;
+    newTabEl.classList.add("tab");
+	newTabEl.style.backgroundImage = ce.favicon;
+	if (ce.active){
+    newTabEl.classList.add("active");
+	newWebview.classList.remove("hidden");
+	newWebview.classList.add("activeWebview");
+	newWebview.style.display = "flex";
+	}
+    toAppendTo.appendChild(newTabEl);
+	
+    newTabEl.addEventListener("mousedown", () => {
+    deselectTabs();
+    newWebview.classList.add("activeWebview");
+    newWebview.style.display='flex';
+    newTabEl.classList.add("active");
+	tabs[i].active = true;
+	setTimeout(() => {
+		updateTabs();
+	}, 10);
+    });
+    let newCloseBtn = document.createElement("button");
+    newCloseBtn.innerHTML='<i class="fa-solid fa-xmark"></i>';
+    newTabEl.appendChild(newCloseBtn);
+	
+	    newCloseBtn.addEventListener("mousedown", () => {
+        deselectTabs();
+        lastClosedTab = newWebview.getURL();
+    newWebview.outerHTML="";
+    newTabEl.outerHTML="";
+	let thisIndex = tabs.indexOf(ce);
+	tabs.splice(ce.id, 1);
+	setTimeout(() => {
+	deselectTabs();
+	if (tabs[thisIndex - 1]){
+    tabs[thisIndex - 1].active = true;
+	} else {
+    tabs[0].active = true;
+	}
+	setTimeout(() => {
+		updateTabs();
+	}, 10);
+	}, 20);
+
+    });
+
+    newTabEl.addEventListener("mouseover", () => {
+        if (showBottomTitle){
+        notify(ce.title, 500, 30+"px", window.innerHeight - 30 + "px");
+        }
+    });
+
+    newTabEl.addEventListener("auxclick", (event) => {
+        if (event.button === 1){
+          deselectTabs();
+        lastClosedTab = newWebview.getURL();
+    newWebview.outerHTML="";
+    newTabEl.outerHTML="";
+    document.querySelector(".tab").click();
+        }
+	setTimeout(() => {
+		updateTabs();
+	}, 10);
+    });
+	
+}
+
 
 
 
