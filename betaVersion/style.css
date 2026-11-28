@@ -241,6 +241,7 @@ div[contenteditable] {
 	padding-left:5px;
 	padding-right:5px;
 	background-color:var(--theme);
+	margin-right:5px;
 }
 
 .group button, .group .tab {
