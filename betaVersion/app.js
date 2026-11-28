@@ -1,6 +1,6 @@
 let homepage = "https://isaacio33.github.io/auto-start-page";
 let searchURL = "https://google.com/search?udm=14&q=";
-let version = "1.0.6.9";
+let version = "1.0.7.9";
 let updateAddress = true;
 let lastClosedTab = "unset";
 let browsingHistory = "";
@@ -13,12 +13,9 @@ let tabs = [];
 let useragent = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.8127.18 AutoBrowser/${version} Safari/537.36`;
 let whatsnew = `
 
- -- Tabs are now powered by JS Objects. (IsaacIo33)
- -- Removed unneeded code and replaced it with better code. (IsaacIo33)
- -- The Check for Updates button can now detect if your version is unreleased or modified. (IsaacIo33)
- -- Moved a section in Developer Tools. (IsaacIo33)
- -- Added Tab Groups. (IsaacIo33)
- -- Now when you close a tab it opens the tab that was before it instead of opening the last tab. (IsaacIo33)
+ -- Fixed a small layout issue with Tab Groups. (IsaacIo33)
+ -- Fixed a small Design issue with the Tab Group section in Settings. (IsaacIo33)
+ -- Fixed a bug where Mini Sidebar Browsers would save between sessions in reserve order. (IsaacIo33)
  `;
 
 let credits = `
@@ -167,7 +164,7 @@ newContainerEl.innerHTML=`
 <br>
 
 <fieldset>
-<legend>New Tab with Tab Group:</legend>
+<legend><p>New Tab with Tab Group:</p></legend>
 <input placeholder="Tab Group name">
 <button onclick="newTab(homepage, this.parentElement.querySelector('input').value.replaceAll(' ', '_'))">Add</button>
 </fieldset>
@@ -535,7 +532,7 @@ function often(){
 
     let allSidebarWebviews = document.querySelectorAll(".miniSidebarBrowserWebviewContainer");
 
-    for (let i = 0; i < allSidebarWebviews.length; i++) {
+    for (let i = allSidebarWebviews.length - 1; i >= 0; i--) {
         let element = allSidebarWebviews[i].querySelector("webview");
         urls.push(element.getURL());
     }
@@ -987,7 +984,11 @@ let newWebview = document.querySelectorAll(".webview")[ce.id];
 	tabs.splice(ce.id, 1);
 	setTimeout(() => {
 	deselectTabs();
+	if (tabs[thisIndex - 1]){
     tabs[thisIndex - 1].active = true;
+	} else {
+    tabs[0].active = true;
+	}
 	setTimeout(() => {
 		updateTabs();
 	}, 10);
